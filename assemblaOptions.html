@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang='en' data-ng-app="app">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Asssembla Options</title>
+    <link type="text/css" href="css/bootstrap.min.css" rel="stylesheet">
+    <!--link type="text/css" href="css/bootstrap-theme.min.css" rel="stylesheet"-->
+	<link href="assembla.css" rel="stylesheet" media="screen">
+  </head>
+  <body data-ng-controller="assemblaOptionsController as vm" style="width:800px">
+    <div class="container-fluid">
+           <div>
+			<br/>
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label for="apiKey" class="col-sm-4 control-label">Assembla API Key</label>
+                <div class="col-sm-6">
+                  <input type="text" class="form-control" ng-model-options="{debounce:1000}" 
+						id="apiKey" ng-model="vm.options.key" placeholder="- api key -"  ng-change="vm.change()">
+                </div>
+				<div class="col-sm-2 control-label">
+					<a href="https://app.assembla.com/user/edit/manage_clients">check here</a>
+				</div>
+              </div>
+              <div class="form-group">
+                <label for="apiSecret" class="col-sm-4 control-label">Assembla API Secret</label>
+                <div class="col-sm-6">
+                  <input type="text" class="form-control" id="apiSecret" ng-model-options="{debounce:1000}" 
+						ng-model="vm.options.secret" placeholder="- api secret -" ng-change="vm.change()">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="mentionsWatchInterval" class="col-sm-4 control-label">Mentions Watch Interval</label>
+                <div class="col-sm-6">
+                  <input type="text" class="form-control" id="mentionsWatchInterval" 
+						ng-model-options="{debounce:1000}"  ng-change="vm.change()"
+						ng-model="vm.options.mentionWatchInterval" placeholder="60000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="elapsedTimeInterval" class="col-sm-4 control-label">Elapsed Time Update Interval</label>
+                <div class="col-sm-6">
+                  <input type="text" class="form-control" id="elapsedTimeInterval" 
+						ng-model-options="{debounce:1000}"  ng-change="vm.change()"
+						ng-model="vm.options.elapsedTimeInterval" placeholder="1000">
+                </div>
+              </div>
+              <!--div class="form-group">
+                <label for="hideEmptyBadge" class="col-sm-4 control-label">Hide badge if 0</label>
+                <div class="col-sm-6">
+                  <input type="text" class="form-control" id="hideEmptyBadge" 
+						ng-model-options="{debounce:1000}"  ng-change="vm.change()"
+						ng-model="vm.options.hideEmptyBadge" placeholder="1000">
+                </div>
+              </div-->
+            </form>
+            <div class="alert" data-ng-class="vm.status.style">
+              {{vm.status.msg}}
+            </div>
+					</div>
+     </div>
+    <!--script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script-->
+	<script src="js/jquery-2.0.3.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+    <script src="js/angular.min.js" charset="utf-8"></script>
+    <script src="js/ui-bootstrap-tpls-0.12.1.min.js" charset="utf-8"></script>
+    <script src="assemblaMain.js" charset="utf-8"></script>
+    <script src="assemblaOptionsService.js" charset="utf-8"></script>
+    <script src="assemblaOptions.js" charset="utf-8"></script>
+
+  </body>
+</html>

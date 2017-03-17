@@ -1,0 +1,98 @@
+.hover-btn {
+  cursor: pointer;
+  -webkit-border-radius: 5;
+  border-radius: 5px;
+  font-family: Arial;
+  padding: 5px 5px 5px 5px;
+}
+.hover-btn:hover {
+  cursor: pointer; 
+	background: #c7d0d6;
+  background-image: -webkit-linear-gradient(top, #c7d0d6, #979fa3);
+  -webkit-border-radius: 5;
+  border-radius: 5px;
+  font-family: Arial;
+  color: #ffffff;
+  padding: 5px 5px 5px 5px;
+  text-decoration: none;
+ }
+.hover-btn span {
+	visibility: hidden;
+}
+.hover-btn:hover span {
+	visibility: visible;
+}
+.selected {
+	background-color: lightgrey;
+}
+ 
+.nav, .pagination, .carousel, .panel-title a { 
+	cursor: pointer; 
+}
+[ng-click], [data-ng-click] {
+	cursor: pointer;
+}
+
+[ng-click], [data-ng-click] {
+	cursor: pointer;
+}
+
+.pagination {
+	margin-top: 0;
+}
+.hover-icon {
+	font-weight: bold;
+	color: lightgrey;
+	}
+.hover-icon:hover {
+	color: black !important;
+	font-weight: bold;
+}
+.invisible {
+	visibility: hidden;
+}
+
+pre {
+    white-space: -moz-pre-wrap; /* Mozilla, supported since 1999 */
+    white-space: -pre-wrap; /* Opera */
+    white-space: -o-pre-wrap; /* Opera */
+    white-space: pre-wrap; /* CSS3 - Text module (Candidate Recommendation) http://www.w3.org/TR/css3-text/#white-space */
+    word-wrap: break-word; /* IE 5.5+ */
+}
+
+.icon-badgeable {
+    position: relative;
+}
+
+.icon-badge {
+    font-size: .5em;
+    
+    display: block;
+    position: absolute;
+    top: -.5em;
+    right: -.75em;
+    height: 1.5em;
+    line-height: 1.5em;
+    border-radius: 30%;
+    text-align: center;
+    
+    color: #fff;
+    background: rgba(0,0,255,0.5);
+}
+.icon-badge::after {
+    content: "\00a0"
+}
+.icon-badge::before {
+    content: "\00a0"
+}
+.icon-badge:empty {
+	visibility: hidden;
+}
+.transparent {
+	opacity: .5;
+}
+.vertical-center {
+
+	display: flex;
+	align-items: center;
+}

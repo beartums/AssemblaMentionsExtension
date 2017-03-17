@@ -1,0 +1,78 @@
+<html>
+<head>
+	<link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+	<link href="css/font-awesome.min.css" rel="stylesheet" media="screen">
+	<link href="assembla.css" rel="stylesheet" media="screen">
+</head>
+<body ng-app="assemblaPopup" style="width:780px;">
+	<div ng-controller="popupController as pu">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-11">
+					<div class="row vertical-center">
+						<div class="col-sm-6 text-left">
+							<h4><img src = "assemblaShield-Oaf2-48.png" height="20" width = "20"> Assembla Mentions for 1AF</h4>
+						</div>
+						<div class="col-sm-2">
+							<span class="btn-group btn-group-sm">
+								<button type="button" class="btn btn-sm btn-default" title="Show unread mentions" ng-class="{'btn-primary':pu.bgPage.showUnread}" ng-click="pu.toggleMentionType('showUnread')">
+									<span class="fa fa-envelope-o"></span>
+								</button>
+								<button
+								<button type="button" class="btn btn-sm btn-default" title="Show read mentions" ng-class="{'btn-primary':pu.bgPage.showRead}" ng-click="pu.toggleMentionType('showRead')">
+									<span class="fa fa-envelope-open-o"></span>
+								<button type="button" class="btn btn-sm btn-default" title="Refresh Mentions" ng-click="pu.refresh()">
+									<span class="fa fa-refresh" ng-class="{'fa-spin':pu.isRefreshing}"></span>
+								</button>
+							</span>	
+						</div>
+						<div class="col-sm-4 text-right" ng-click="pu.getElapsedTime()">
+							<small>last updated: <strong>{{pu.getElapsedTime()}}</strong></small>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12">
+							<table width="500" class="table table-hover table-condensed">
+								<tr class="small active">
+									<th width="5%">By</th>
+									<th width="12%">Date</th>
+									<th width="75%">Message</th>
+									<th width="5%"></th>
+								</tr>
+								<tr class="hover-show" ng-repeat="m in pu.userMentions" ng-click="pu.gotoUrl(m)">
+									<td ng-attr-title="{{m.author_id | authorName: pu.bgPage.users}}" ng-class="{transparent:m.isBeingDeleted}">
+										<small>{{m.author_id | authorInitials: pu.bgPage.users}}</small>
+									</td>
+									<td ng-attr-title="{{m.created_at | date: 'yyyy'}}" ng-class="{transparent:m.isBeingDeleted}">
+										<small><small>{{m.created_at  | date: 'MM-dd hh:mm'}}</small></small>
+									</td>
+									<td ng-class="{transparent:m.isBeingDeleted}">
+										<small>{{m.message}}</small>
+									</td>
+									<td ng-if="!m.isBeingDeleted && !m.read">
+										<button type="button" class="close blur-hide" prevent-default ng-click="pu.markAsRead(m)">
+											<span aria-hidden="true">&times;</span>
+										</button>
+									</td>
+									<td ng-if="!m.isBeingDeleted && m.read">
+									</td>
+									<td ng-if="m.isBeingDeleted" prevent-default ng-click="pu.markAsRead(m)">
+										<span class="fa fa-spinner fa-spin">
+										</span>
+									</td>
+								</tr>
+								
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="js/jquery-2.0.3.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/angular.min.js" charset="utf-8"></script>
+	<script src="assemblaPopupMain.js" charset="utf-8"></script>
+	<script src="assemblaPopupController.js"></script>
+</body>
+</html>

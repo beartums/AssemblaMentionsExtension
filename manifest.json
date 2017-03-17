@@ -1,0 +1,33 @@
+{
+	"manifest_version": 2,
+
+	"name": "Assembla Mentions",
+	"description": "Assembla Mentions Badge and List",
+	"short_name": "Assembla/1AF",
+	"version": "1.0.6",
+	"icons": {
+		"16": "assemblaShield-oaf2-16.png",
+		"48": "assemblaShield-oaf2-48.png",
+		"128": "assemblaShield-oaf2-128.png"
+	},
+	"options_page": "assemblaOptions.html",
+	"options_ui": {
+		"page": "assemblaOptions.html",
+		"chrome_style": true
+	},
+	"background": {
+		"scripts": ["js/jquery-2.0.3.min.js","background.js"]
+	},
+	"browser_action": {
+		"default_icon": "assemblaShield-oaf2-128.png",
+		"default_popup": "assemblaPopup.html",
+		"default_title": "Assembla Mentions"
+	},
+	"content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+	"permissions": [
+		"storage",
+		"contentSettings",
+		"https://ajax.googleapis.com/",
+		"https://*.assembla.com/"
+	]
+}
