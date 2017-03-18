@@ -5,6 +5,7 @@ angular.module("app")
 
 			// for controller-as syntax
 			var vm = this
+			vm.manifest = chrome.runtime.getManifest()
 			vm.status = aos.status;
 			vm.options = aos.options;
 			// when a change is made, save the options to chrome storage

@@ -11,6 +11,7 @@
 	<body data-ng-controller="assemblaOptionsController as vm" style="width:800px">
 		<div class="container-fluid">
 			<br/>
+			<small><small>v{{vm.manifest.version}}</small></small>
 			<div class="row">
 		    <form class="form-horizontal">
 		      <div class="form-group">
@@ -45,6 +46,7 @@
 				ng-model="vm.options.elapsedTimeInterval" placeholder="1000" title="Amount of time between showing updates to the amount of time since the last successful refresh of the mention data">
 		        </div>
 		      </div>
+					<br />
 					<div class="row vertical-bottom">
 		        <label for="hideEmptyBadge" class="col-sm-4 text-right">Hide badge if 0</label>
 		        <div class="col-sm-6">

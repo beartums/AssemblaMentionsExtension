@@ -98,9 +98,10 @@ function getMentions() {
 		chrome.browserAction.setBadgeBackgroundColor({'color':color});
 		return data;
 	}).fail(function (err) {
-		// If no connection, badge turns red but shows last known userMention length if there have been any successful
+		// If no connection, badge turns red but shows last known userMention length
+		//  if there have been any successful
 		// connections
-		chrome.browserAction.setBadgeText({text: !lastConnect || userMentions.length == 0 ? "?!" : userMentions.length.toString()});
+		chrome.browserAction.setBadgeText({text: !lastConnect  ? "?!" : userMentions.length.toString()});
 		var color =  '#FF0000'
 		chrome.browserAction.setBadgeBackgroundColor({'color':color});
 	});

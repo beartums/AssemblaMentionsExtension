@@ -10,6 +10,7 @@ angular.module("assemblaPopup")
 		var pu = this;
 
 		pu.bgPage = chrome.extension.getBackgroundPage();
+		pu.manifest = chrome.runtime.getManifest();
 		pu.gotoUrl = gotoUrl;
 		pu.authorInitials = authorInitials;
 		pu.markAsRead = markAsRead;
@@ -63,7 +64,7 @@ angular.module("assemblaPopup")
 				pu.isRefreshing = true;
 				$scope.$apply();
 			});
-			// noting to be done with the data, since the controller is watching the
+			// nothing to be done with the data, since the controller is watching the
 			// background page for changes in the mentions.
 			// cancel the spinner and update elapsed time
 			pu.bgPage.getMentions().always(function() {
@@ -74,6 +75,10 @@ angular.module("assemblaPopup")
 			});
 		}
 
+		/**
+		 * Open the optiong page
+		 * @return {void}
+		 */
 		function openOptions() {
 			chrome.runtime.openOptionsPage();
 		}
@@ -98,25 +103,34 @@ angular.module("assemblaPopup")
 
 			mention.isBeingDeleted = true;
 
+			// Call bg page to manipulate the api using jquery.ajax
 			pu.bgPage.markMentionRead(mention.id,simulateMarking).done(function(data) {
 				$timeout(function() {
 					if (pu.userMentions.indexOf(mention)>-1) pu.userMentions.splice(pu.userMentions.indexOf(mention),1);
 				});
 			}).always(function () {
+				// No matter what, reset the isBeingDeleted flag
 				$timeout(function() {
 					mention.isBeingDeleted = false;
 				});
 			});
 		}
 
-		// get initials of author or mention from the userid
+		/**
+		 * Get the initials of the author for displayVal
+		 * @param  {string} id Assembla-assigned author_id
+		 * @return {string}    author initials, derived from the id as best as possible
+		 */
 		function authorInitials(id) {
 			var author = pu.bgPage.users(id);
 			var init = '', inits = []
 			if (!author) return '--';
+
+			// use name, with fallback to first part of email or login id
 			var name = (author.name ? author.name
 									: (author.email ? author.email.substring(0,author.email.indexOf('@')-1)
 										: author.login));
+			// split by word and take the first letter of each
 			inits = name.replace("."," ").split(" ");
 			if (inits.length==1) return inits[0].substring(0,3);
 			return inits.reduce(function(init,name) {
@@ -125,9 +139,16 @@ angular.module("assemblaPopup")
 			},"");
 		}
 
+		/**
+		 * Parse time betweed startDate and now, returning human-readable form (I perfer
+		 * this to moment.js because of the format and rounding)
+		 * @param  {Date} startDate Date from which to calculate
+		 * @return {string}           Human-readable fomr of amount of time passed
+		 */
 		function getElapsedTime(startDate) {
 			startDate = startDate || pu.bgPage.lastConnect;
 			if (!startDate || !angular.isDate(startDate) || startDate > new Date()) return 'Never';
+			// Define the time measure words
 			var defs = [
 				{uom: 'seconds', divide: 'microseconds', by: 1000},
 				{uom: 'minutes', divide: 'seconds', by: 60},
@@ -137,6 +158,9 @@ angular.module("assemblaPopup")
 				{uom: 'months', divide: 'days', by: 30.5},
 				{uom: 'years', divide: 'days', by: 365},
 			];
+
+			// Find the first value less than one and use the previous value (unless it
+			// is the first value, then use it anyway).
 			var values = { microseconds: new Date() - startDate };
 			for (var i = 0; i < defs.length; i++) {
 				var def = defs[i]
@@ -157,6 +181,12 @@ angular.module("assemblaPopup")
 
 		}
 
+		/**
+		 * simple and stupid singularization.  Just remove trailing 's'
+		 * @param  {string} str   String to singularizeString
+		 * @param  {number} count Number of items (singularize only if 1)
+		 * @return {string}       Singlarized viersion of string, if appropriate
+		 */
 		function singularizeString(str, count) {
 			if (count <= 1) {
 				return str.replace(/s$/,'');
@@ -164,8 +194,13 @@ angular.module("assemblaPopup")
 			return str;
 		}
 
+		/**
+		 * Toggle 'Read' and 'Unread' mention viewability on
+		 * @param  {string} typeName 'Read' or 'Unread'
+		 * @return {void}
+		 */
 		function toggleMentionType(typeName) {
 			pu.bgPage[typeName] = !pu.bgPage[typeName];
-			pu.refresh();;
+			pu.refresh();
 		}
 	}

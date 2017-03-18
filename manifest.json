@@ -4,7 +4,7 @@
 	"name": "Assembla Mentions",
 	"description": "Assembla Mentions Badge and List",
 	"short_name": "Assembla/1AF",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"icons": {
 		"16": "assemblaShield-oaf2-16.png",
 		"48": "assemblaShield-oaf2-48.png",
