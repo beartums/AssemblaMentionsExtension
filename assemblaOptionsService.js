@@ -12,7 +12,8 @@ angular.module("app")
     },
 		saveOptions: saveOptions,
 		onchange: saveOptions,
-		setOnReadyHandler: setOnReadyHandler
+		setOnReadyHandler: setOnReadyHandler,
+		restoreOptions: restoreOptions
   }
 
 	var readyHandler = null;
