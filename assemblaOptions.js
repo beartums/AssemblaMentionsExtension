@@ -1,24 +1,30 @@
+// Controller for the assembla mentions options page
 angular.module("app")
   .controller("assemblaOptionsController", ['assemblaOptionsService',
     function(aos) {
 
-		var vm = this
-		vm.status = aos.status;
-		vm.options = aos.options;
-		vm.change = aos.saveOptions;
-		
-		aos.setOnReadyHandler(init);
-
-		function init() {
+			// for controller-as syntax
+			var vm = this
 			vm.status = aos.status;
 			vm.options = aos.options;
-		}
-		
-		function toggle(obj,prop) {
-			obj[prop] = !obj[prop];
-			vm.change()
-		}
+			// when a change is made, save the options to chrome storage
+			vm.change = aos.saveOptions;
 
-		return vm
+			// have the Options Service call the init function when data has been loaded
+			aos.setOnReadyHandler(init);
+
+			// Set the display objects
+			function init() {
+				vm.status = aos.status;
+				vm.options = aos.options;
+			}
+
+			// Not used
+			function toggle(obj,prop) {
+				obj[prop] = !obj[prop];
+				vm.change()
+			}
+
+			return vm
     }
   ]);

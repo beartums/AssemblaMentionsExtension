@@ -14,17 +14,19 @@ function getOptions() {
 			key: '',
 			mentionWatchInterval: '60000',
 			elapsedTimeInterval: '1000',
-			
+			hideEmptyBadge: true,
+			autoRead: true,
 		}, function(items) {
 			options.secret = items.secret;
 			options.key = items.key;
 			options.mentionWatchInterval = items.mentionWatchInterval;
 			options.elapsedTimeInterval = items.elapsedTimeInterval;
-			
+			options.hideEmptyBadge = items.hideEmptyBadge;
+			options.autoRead = items.autoRead;
 			startMentionWatch(options.mentionWatchInterval);
 		});
 	}
-	
+
 function startMentionWatch(interval) {
 	getMentions().always(function(data) {
 		options = options || {};
@@ -35,7 +37,7 @@ function startMentionWatch(interval) {
 	});
 }
 
-	
+
 // Get the user mentions from Assembla, if can connect
 function getMentions() {
 	var urlUnread = "https://api.assembla.com/v1/user/mentions.json?unread=true"
@@ -49,7 +51,7 @@ function getMentions() {
 		"headers": headers,
 		"timeout": 10000
 	}
-	
+
 	var url;
 	if (showRead && showUnread) {
 		url = urlAll;
@@ -65,13 +67,13 @@ function getMentions() {
 			}
 		}
 	}
-	
+
 	return $.ajax(url,configObj).done(function(data) {
 		// Get the time of the last successful connection
 		lastConnect = new Date();
 		var newUserMentions = [];
 		if (!data) data=[];
-		
+
 		// Set the userMentions data
 		data.forEach(function(mention) {
 			newUserMentions.push(mention);
@@ -81,16 +83,24 @@ function getMentions() {
 			}
 		});
 		userMentions = newUserMentions;
-		
-		// Successful get -- badge is grey if there are no mentions, green if there are any
-		chrome.browserAction.setBadgeText({text: !userMentions || userMentions.length==0 ? '' : userMentions.length.toString()});
+
+		// Successful get -- green if there are any mentions, grey or hidden if none
+		var badgeText;
+		if (userMentions.length>0) {
+			badgeText = userMentions.length.toString();
+		} else if (options.hideEmptyBadge) {
+			badgeText = '';
+		} else {
+			badgeText = '0'
+		}
+		chrome.browserAction.setBadgeText({text: badgeText});
 		var color = userMentions.length==0 ? '#A8A8A8' : '#00cc00'
 		chrome.browserAction.setBadgeBackgroundColor({'color':color});
 		return data;
 	}).fail(function (err) {
 		// If no connection, badge turns red but shows last known userMention length if there have been any successful
 		// connections
-		chrome.browserAction.setBadgeText({text: !lastConnect ? "?!" : userMentions.length.toString()});
+		chrome.browserAction.setBadgeText({text: !lastConnect || userMentions.length == 0 ? "?!" : userMentions.length.toString()});
 		var color =  '#FF0000'
 		chrome.browserAction.setBadgeBackgroundColor({'color':color});
 	});
@@ -116,7 +126,7 @@ function getUser(id) {
 
 // Mark a mention as read
 function markMentionRead(id, isSimulation) {
-	
+
 	if (isSimulation) {
 		return {
 			done: function(doneFunc) {
@@ -133,7 +143,7 @@ function markMentionRead(id, isSimulation) {
 			}
 		}
 	}
-	
+
 	var url =  "https://api.assembla.com/v1/user/mentions/" + id +
 				"/mark_as_read.json"
 	headers = {

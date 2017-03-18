@@ -10,10 +10,9 @@
 		"48": "assemblaShield-oaf2-48.png",
 		"128": "assemblaShield-oaf2-128.png"
 	},
-	"options_page": "assemblaOptions.html",
 	"options_ui": {
 		"page": "assemblaOptions.html",
-		"chrome_style": true
+		"chrome_style": false
 	},
 	"background": {
 		"scripts": ["js/jquery-2.0.3.min.js","background.js"]

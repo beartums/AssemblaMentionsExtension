@@ -1,65 +1,69 @@
+// Service to manage the assembla options object.  Stored in chrome.sstorage.sync
+// so that it syncs across devices
 angular.module("app")
-  .factory("assemblaOptionsService", ['$rootScope', '$filter', function($rootScope, $filter) {
+  .factory("assemblaOptionsService", ['$rootScope', '$filter', '$timeout', function($rootScope, $filter, $timeout) {
 
-    var aos = {
-      options: {},
-		data: {
-			tickets: [],
-			lastCompletedUpdateDate: '2006-01-01',
-			mostRecentUpdateDate: null
-		},
+	// Options Object
+	var aos = {
+    options: {},
 		status: {
 			msg: '',
 			mode: ''
-      },
+    },
 		saveOptions: saveOptions,
 		onchange: saveOptions,
 		setOnReadyHandler: setOnReadyHandler
-    }
+  }
 
 	var readyHandler = null;
 	var isReady = false;
-	
 	var _delim = "@_@"
 
-    restoreOptions();
+	// Read the options from storage
+  restoreOptions();
 
-    return aos;
-		
-    function onchange() {
-      saveOptions();
-    }
-		
+	// initialization complete, return the service;
+  return aos;
+
+	// Implementation
+
+	/**
+	 * Save the options when a change is mostRecentUpdateDate
+	 * @return {void}
+	 */
+  function onchange() {
+    saveOptions();
+  }
+
+	/**
+	 * Set a function to be called when the service has initialized and completed
+	 * loading data from storage
+	 * @param {function} handler function to be called when initialization is completed
+	 */
 	function setOnReadyHandler(handler) {
 		readyHandler = handler;
 		if (isReady) handler();
 	}
 
-    
+	/**
+	 * Save the options object to storage
+	 * @return {void}
+	 */
 	function saveOptions() {
-      chrome.storage.sync.set({
-        itemsPerPage: aos.options.itemsPerPage,
-        currentPage: aos.options.currentPage,
-        currentMilestone: aos.options.currentMilestone,
-        currentSortAscending: aos.options.currentSortAscending,
-        currentSortColumn: aos.options.currentSortColumn,
-        secret: aos.options.secret,
-        key: aos.options.key,
-        statusTimeout: aos.options.statusTimeout,
-		userLogin: aos.options.userLogin,
-		purgeBeforeDate: $filter('date')(aos.options.purgeBeforeDate,'yyyy-MM-dd'),
-		loadAllTickets: aos.options.loadAllTickets,
-		purgeOpenTickets: aos.options.purgeOpenTickets,
-		mentionWatchInterval: aos.options.mentionWatchInterval,
-		elapsedTimeInterval: aos.options.elapsedTimeInterval,
-		filters: aos.options.filters,
-		filters: aos.options.hiddenColumns
-      }, function() {
+    chrome.storage.sync.set({
+      secret: aos.options.secret,
+      key: aos.options.key,
+      statusTimeout: aos.options.statusTimeout,
+			mentionWatchInterval: aos.options.mentionWatchInterval,
+			elapsedTimeInterval: aos.options.elapsedTimeInterval,
+			hideEmptyBadge: aos.options.hideEmptyBadge,
+			autoRead: aos.options.autoRead,
+    }, function() {
         // Update status to let user know options were saved.
         aos.status.msg = 'Options saved.';
         aos.status.style = 'alert-success'
         $rootScope.$apply();
-        setTimeout(function() {
+        $timeout(function() {
           aos.status.msg = '';
           aos.status.style = '';
           $rootScope.$apply();
@@ -67,49 +71,30 @@ angular.module("app")
       });
     }
 
-    // Restores select box and checkbox state using the preferences
-    // stored in chrome.storage.
+		/**
+		 * Read the saved options from storage and populate the options object
+		 * @return {void}
+		 */
     function restoreOptions() {
-      // Use default value color = 'red' and likesColor = true.
       chrome.storage.sync.get({
         secret: '',
         key: '',
         statusTimeout: 1500,
-        itemsPerPage: 10,
-        currentPage: 1,
-        currentMilestone: null,
-        currentSortAscending: true,
-        currentSortColumn: null,
-		visibleColumnNameString: '',
-		userLogin: 'eric.griffith',
-		purgeOpenTickets: false,
-		purgeBeforeDate: '2012-01-01',
-		loadAllTickets: false,
-		mentionWatchInterval: '600000',
-		elapsedTimeInterval: '1000',
-		filters: {},
-		hiddenColumns: {}
-      }, function(items) {
-        aos.options.itemsPerPage = items.itemsPerPage;
-        aos.options.currentPage = items.currentPage;
-        aos.options.currentMilestone = items.currentMilestone;
-        aos.options.currentSortAscending = items.currentSortAscending;
-        aos.options.currentSortColumn = items.currentSortColumn;
+  			mentionWatchInterval: '600000',
+				elapsedTimeInterval: '1000',
+				hideEmptyBadge: true,
+				autoRead: true
+	    }, function(items) {
         aos.options.secret = items.secret;
         aos.options.key = items.key;
         aos.options.statusTimeout = items.statusTimeout;
-		aos.options.visibleColumnNameString = items.visibleColumnNameString;
-		aos.options.userLogin = items.userLogin;
-		aos.options.mentionWatchInterval = items.mentionWatchInterval;
-        aos.options.elapsedTimeInterval = items.elapsedTimeInterval;
-        aos.options.purgeBeforeDate = items.purgeBeforeDate;
-        aos.options.loadAllTickets = items.loadAllTickets;
-        aos.options.purgeOpenTickets = items.purgeOpenTickets;
-		aos.options.filters = items.filters;
-		aos.options.hiddenColumns = items.hiddenColumns;
+				aos.options.mentionWatchInterval = items.mentionWatchInterval;
+				aos.options.elapsedTimeInterval = items.elapsedTimeInterval;
+				aos.options.hideEmptyBadge = items.hideEmptyBadge;
+				aos.options.autoRead = items.autoRead;
         $rootScope.$apply();
-		if (readyHandler && !isReady) readyHandler();
-		isReady = true;
+				if (readyHandler && !isReady) readyHandler();
+				isReady = true;
       });
     }
 

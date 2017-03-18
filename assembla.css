@@ -6,7 +6,7 @@
   padding: 5px 5px 5px 5px;
 }
 .hover-btn:hover {
-  cursor: pointer; 
+  cursor: pointer;
 	background: #c7d0d6;
   background-image: -webkit-linear-gradient(top, #c7d0d6, #979fa3);
   -webkit-border-radius: 5;
@@ -25,9 +25,9 @@
 .selected {
 	background-color: lightgrey;
 }
- 
-.nav, .pagination, .carousel, .panel-title a { 
-	cursor: pointer; 
+
+.nav, .pagination, .carousel, .panel-title a {
+	cursor: pointer;
 }
 [ng-click], [data-ng-click] {
 	cursor: pointer;
@@ -66,7 +66,7 @@ pre {
 
 .icon-badge {
     font-size: .5em;
-    
+
     display: block;
     position: absolute;
     top: -.5em;
@@ -75,7 +75,7 @@ pre {
     line-height: 1.5em;
     border-radius: 30%;
     text-align: center;
-    
+
     color: #fff;
     background: rgba(0,0,255,0.5);
 }
@@ -92,7 +92,13 @@ pre {
 	opacity: .5;
 }
 .vertical-center {
-
 	display: flex;
 	align-items: center;
+}
+.vertical-bottom {
+	display: flex;
+	align-items: bottom;
+}
+.fa-toggle-on {
+	color: green;
 }

@@ -10,21 +10,29 @@
 			<div class="row">
 				<div class="col-md-11">
 					<div class="row vertical-center">
-						<div class="col-sm-6 text-left">
+						<div class="col-sm-5 text-left">
 							<h4><img src = "assemblaShield-Oaf2-48.png" height="20" width = "20"> Assembla Mentions for 1AF</h4>
 						</div>
-						<div class="col-sm-2">
-							<span class="btn-group btn-group-sm">
-								<button type="button" class="btn btn-sm btn-default" title="Show unread mentions" ng-class="{'btn-primary':pu.bgPage.showUnread}" ng-click="pu.toggleMentionType('showUnread')">
-									<span class="fa fa-envelope-o"></span>
-								</button>
-								<button
-								<button type="button" class="btn btn-sm btn-default" title="Show read mentions" ng-class="{'btn-primary':pu.bgPage.showRead}" ng-click="pu.toggleMentionType('showRead')">
-									<span class="fa fa-envelope-open-o"></span>
-								<button type="button" class="btn btn-sm btn-default" title="Refresh Mentions" ng-click="pu.refresh()">
-									<span class="fa fa-refresh" ng-class="{'fa-spin':pu.isRefreshing}"></span>
-								</button>
-							</span>	
+						<div class="col-sm-3">
+							<span class="btn-toolbar btn-toolbar-sm">
+								<span class="btn-group btn-group-sm">
+									<button type="button" class="btn btn-sm btn-default" title="Show unread mentions" ng-class="{'btn-primary':pu.bgPage.showUnread}" ng-click="pu.toggleMentionType('showUnread')">
+										<span class="fa fa-envelope-o"></span>
+									</button>
+									<button
+									<button type="button" class="btn btn-sm btn-default" title="Show read mentions" ng-class="{'btn-primary':pu.bgPage.showRead}" ng-click="pu.toggleMentionType('showRead')">
+										<span class="fa fa-envelope-open-o"></span>
+									</button>
+								</span>
+								<span class="btn-group btn-group-sm">
+										<button type="button" class="btn btn-sm btn-default" title="Options page" ng-click="pu.openOptions()">
+											<span class="fa fa-gears"></span>
+										</button>
+										<button type="button" class="btn btn-sm btn-default" title="Refresh Mentions" ng-click="pu.refresh()">
+											<span class="fa fa-refresh" ng-class="{'fa-spin':pu.isRefreshing}"></span>
+										</button>
+								</span>
+							</span>
 						</div>
 						<div class="col-sm-4 text-right" ng-click="pu.getElapsedTime()">
 							<small>last updated: <strong>{{pu.getElapsedTime()}}</strong></small>
@@ -61,7 +69,7 @@
 										</span>
 									</td>
 								</tr>
-								
+
 							</table>
 						</div>
 					</div>
