@@ -1,10 +1,10 @@
-angular.module("assemblaPopup", [])
+angular.module("app", [])
 	.filter("authorInitials", function() {
 		return function(id,users) {
 			var author = users[id];
 			var init = '', inits = []
 			if (!author) return '--';
-			var name = (author.name ? author.name 
+			var name = (author.name ? author.name
 									: (author.email ? author.email.substring(0,author.email.indexOf('@')-1)
 										: author.login));
 			inits = name.replace("."," ").split(" ");
@@ -19,7 +19,7 @@ angular.module("assemblaPopup", [])
 		return function(id,users) {
 			var author = users[id];
 			if (!author) return '--';
-			var name = (author.name ? author.name 
+			var name = (author.name ? author.name
 									: (author.email ? author.email
 										: author.login));
 			return name;
@@ -34,5 +34,3 @@ angular.module("assemblaPopup", [])
 					});
 			}
 	})
-
-

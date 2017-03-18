@@ -4,7 +4,7 @@
 	"name": "Assembla Mentions",
 	"description": "Assembla Mentions Badge and List",
 	"short_name": "Assembla/1AF",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"icons": {
 		"16": "assemblaShield-oaf2-16.png",
 		"48": "assemblaShield-oaf2-48.png",
@@ -15,7 +15,7 @@
 		"chrome_style": false
 	},
 	"background": {
-		"scripts": ["js/jquery-2.0.3.min.js","background.js"]
+		"page": "assemblaBackground.html"
 	},
 	"browser_action": {
 		"default_icon": "assemblaShield-oaf2-128.png",
