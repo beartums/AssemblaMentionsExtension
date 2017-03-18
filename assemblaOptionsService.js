@@ -71,32 +71,30 @@ angular.module("app")
       });
     }
 
-		/**
-		 * Read the saved options from storage and populate the options object
-		 * @return {void}
-		 */
-    function restoreOptions() {
-      chrome.storage.sync.get({
-        secret: '',
-        key: '',
-        statusTimeout: 1500,
-  			mentionWatchInterval: '600000',
-				elapsedTimeInterval: '1000',
-				hideEmptyBadge: true,
-				autoRead: true
-	    }, function(items) {
-        aos.options.secret = items.secret;
-        aos.options.key = items.key;
-        aos.options.statusTimeout = items.statusTimeout;
-				aos.options.mentionWatchInterval = items.mentionWatchInterval;
-				aos.options.elapsedTimeInterval = items.elapsedTimeInterval;
-				aos.options.hideEmptyBadge = items.hideEmptyBadge;
-				aos.options.autoRead = items.autoRead;
-        $rootScope.$apply();
-				if (readyHandler && !isReady) readyHandler();
-				isReady = true;
-      });
-    }
-
-
-  }]);
+	/**
+	 * Read the saved options from storage and populate the options object
+	 * @return {void}
+	 */
+  function restoreOptions() {
+    chrome.storage.sync.get({
+      secret: '',
+      key: '',
+      statusTimeout: 1500,
+			mentionWatchInterval: '600000',
+			elapsedTimeInterval: '1000',
+			hideEmptyBadge: true,
+			autoRead: true
+    }, function(items) {
+      aos.options.secret = items.secret;
+      aos.options.key = items.key;
+      aos.options.statusTimeout = items.statusTimeout;
+			aos.options.mentionWatchInterval = items.mentionWatchInterval;
+			aos.options.elapsedTimeInterval = items.elapsedTimeInterval;
+			aos.options.hideEmptyBadge = items.hideEmptyBadge;
+			aos.options.autoRead = items.autoRead;
+      $rootScope.$apply();
+			if (readyHandler && !isReady) readyHandler();
+			isReady = true;
+    });
+  }
+}]);

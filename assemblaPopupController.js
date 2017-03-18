@@ -1,7 +1,7 @@
 /**
  * Controller for the extension popup view, which lists mentions and allows interaction
  */
-angular.module("assemblaPopup")
+angular.module("app")
 	.controller("popupController", ['$window', '$scope', '$timeout', popupControllerFunction]);
 
 	function popupControllerFunction($window,$scope,$timeout) {
@@ -9,7 +9,7 @@ angular.module("assemblaPopup")
 		// For controler-as syntax
 		var pu = this;
 
-		pu.bgPage = chrome.extension.getBackgroundPage();
+		pu.bgPage = chrome.extension.getBackgroundPage().bg;
 		pu.manifest = chrome.runtime.getManifest();
 		pu.gotoUrl = gotoUrl;
 		pu.authorInitials = authorInitials;
@@ -67,7 +67,7 @@ angular.module("assemblaPopup")
 			// nothing to be done with the data, since the controller is watching the
 			// background page for changes in the mentions.
 			// cancel the spinner and update elapsed time
-			pu.bgPage.getMentions().always(function() {
+			pu.bgPage.getMentions().finally(function() {
 				$timeout(function() {
 					pu.isRefreshing = false;
 					pu.getElapsedTime();
@@ -104,16 +104,17 @@ angular.module("assemblaPopup")
 			mention.isBeingDeleted = true;
 
 			// Call bg page to manipulate the api using jquery.ajax
-			pu.bgPage.markMentionRead(mention.id,simulateMarking).done(function(data) {
-				$timeout(function() {
-					if (pu.userMentions.indexOf(mention)>-1) pu.userMentions.splice(pu.userMentions.indexOf(mention),1);
+			pu.bgPage.markMentionRead(mention.id,simulateMarking)
+				.then(function(data) {
+					$timeout(function() {
+						if (pu.userMentions.indexOf(mention)>-1) pu.userMentions.splice(pu.userMentions.indexOf(mention),1);
+					});
+				}).finally(function () {
+					// No matter what, reset the isBeingDeleted flag
+					$timeout(function() {
+						mention.isBeingDeleted = false;
+					});
 				});
-			}).always(function () {
-				// No matter what, reset the isBeingDeleted flag
-				$timeout(function() {
-					mention.isBeingDeleted = false;
-				});
-			});
 		}
 
 		/**
