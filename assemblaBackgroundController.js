@@ -17,20 +17,55 @@ angular.module("app")
 		bg.userMentions = [];
 		bg.users = {};
 		bg.lastConnect;
-		bg.showUnread = true;
-		bg.showRead = false;
 		bg.usersBeingFetched = [];
+
+		// Control behavior for this instance only.
+		bg.showUnread = true; // show unread messages
+		bg.showRead = false;  // show read messages
+		//bg.updatesPaused = false;  // Pause api polling
+		var _updatesPaused = false;
+		var _mentionsPromise;
 
 		bg.getMentions = getMentions;
 		bg.markMentionRead = markMentionRead;
 		bg.getUser = getUser;
+		bg.pauseUpdates = pauseUpdates;
+		bg.startUpdates = startUpdates;
+		bg.isPaused = isPaused;
 
 		// load the options from storage
-		aos.setOnReadyHandler(startMentionWatch)
+		aos.setOnReadyHandler(init);
 
-		aas.init({key: bg.options.key, secret: bg.options.secret});
+		// Watch for changes in the the synced storage
+		chrome.storage.onChanged.addListener(function(changes, area) {
+			if (area !== 'sync') return;
+			// If the secret or key have changed, reinitialize the Api Service
+			if (changes.secret || changes.key) {
+				let secret = changes.secret ? changes.secret.newValue : bg.options.secret;
+				let key = changes.key ? changes.key.newValue : bg.options.key;
+				aas.init({key: key, secret: secret});
+			}
+			// Propagate the changes to the internal options object
+			for (let prop in changes) {
+				if (bg.options[prop || typeof bg.options[prop] === 'undefined']) {
+					bg.options[prop] = changes[prop].newValue;
+				}
+			}
+			// if the changes affect the mention watch in any way, restart the loop
+			if (changes.secret || changes.key || changes.mentionWatchInterval) {
+				if (!_updatesPaused)  {
+					$timeout.cancel(_mentionsPromise);
+					startMentionWatch();
+				}
+			}
+		});
 
 		return bg;
+
+		function init() {
+			aas.init({key: bg.options.key, secret: bg.options.secret});
+			startMentionWatch();
+		}
 
 		/**
 		 * Begin watching for changes in the mentions on assembla.  This function calls
@@ -39,16 +74,28 @@ angular.module("app")
 		 * @return {void}
 		 */
 		function startMentionWatch(interval) {
-			aas.init({key: bg.options.key, secret: bg.options.secret});
+
 			getMentions().finally(function(data) {
 				// set the key and secret for the api service
 				interval = interval || bg.options.mentionWatchInterval || 60000;
-				$timeout(function() {
-					// get options first, which also triggers the function to poll the api
-					bg.aos.restoreOptions();
+				_mentionsPromise = $timeout(function() {
 					startMentionWatch();
 				},interval);
 			});
+		}
+
+		function pauseUpdates() {
+			_updatesPaused = true;
+			let cancelled = $timeout.cancel(_mentionsPromise);
+		}
+
+		function startUpdates() {
+			_updatesPaused = false;
+			startMentionWatch();
+		}
+
+		function isPaused() {
+			return _updatesPaused;
 		}
 
 		/**

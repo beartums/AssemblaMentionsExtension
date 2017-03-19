@@ -81,7 +81,7 @@ angular.module("app")
       secret: '',
       key: '',
       statusTimeout: 1500,
-			mentionWatchInterval: '600000',
+			mentionWatchInterval: '60000',
 			elapsedTimeInterval: '1000',
 			hideEmptyBadge: true,
 			autoRead: true
