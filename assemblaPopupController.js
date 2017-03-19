@@ -11,6 +11,7 @@ angular.module("app")
 
 		pu.bgPage = chrome.extension.getBackgroundPage().bg;
 		pu.manifest = chrome.runtime.getManifest();
+
 		pu.gotoUrl = gotoUrl;
 		pu.authorInitials = authorInitials;
 		pu.markAsRead = markAsRead;
@@ -18,6 +19,7 @@ angular.module("app")
 		pu.refresh = refresh;
 		pu.toggleMentionType = toggleMentionType;
 		pu.openOptions = openOptions;
+		pu.toggleApiUpdates = toggleApiUpdates;
 
 		// Watch for changes to the userMentions array so they can be propagated
 		$scope.$watch('pu.bgPage.userMentions', function(newVal,oldVal) {
@@ -73,6 +75,14 @@ angular.module("app")
 					pu.getElapsedTime();
 				});
 			});
+		}
+
+		function toggleApiUpdates() {
+			if (pu.bgPage.isPaused()) {
+				pu.bgPage.startUpdates();
+			} else {
+				pu.bgPage.pauseUpdates()
+			}
 		}
 
 		/**
