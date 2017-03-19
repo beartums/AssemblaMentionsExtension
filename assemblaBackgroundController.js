@@ -1,0 +1,169 @@
+angular.module("app", []);
+
+angular.module("app")
+	.controller("assemblaBackgroundController", ['$window', '$scope', '$timeout', '$q', 'assemblaApiService', 'assemblaOptionsService',  assemblaBackgroundControllerFunction]);
+
+	function assemblaBackgroundControllerFunction($window, $scope, $timeout, $q, aas, aos) {
+
+		// For controler-as syntax
+		// NOTE: not using 'var' because I WANT this to be a global object attached to
+		// the window.  This allows the other parts of this extension to watch the
+		// data and manipulate this controller
+		bg = this;
+
+		// INTERFACE
+		bg.options = aos.options;
+		bg.aos = aos;
+		bg.userMentions = [];
+		bg.users = {};
+		bg.lastConnect;
+		bg.showUnread = true;
+		bg.showRead = false;
+		bg.usersBeingFetched = [];
+
+		bg.getMentions = getMentions;
+		bg.markMentionRead = markMentionRead;
+		bg.getUser = getUser;
+
+		// load the options from storage
+		aos.setOnReadyHandler(startMentionWatch)
+
+		aas.init({key: bg.options.key, secret: bg.options.secret});
+
+		return bg;
+
+		/**
+		 * Begin watching for changes in the mentions on assembla.  This function calls
+		 * itself with timeout after every read -- allows interval to change easily
+		 * @param  {number} interval time (ms) until the next check
+		 * @return {void}
+		 */
+		function startMentionWatch(interval) {
+			aas.init({key: bg.options.key, secret: bg.options.secret});
+			getMentions().finally(function(data) {
+				// set the key and secret for the api service
+				interval = interval || bg.options.mentionWatchInterval || 60000;
+				$timeout(function() {
+					// get options first, which also triggers the function to poll the api
+					bg.aos.restoreOptions();
+					startMentionWatch();
+				},interval);
+			});
+		}
+
+		/**
+		 * Get the mentions from assembla if can connection.
+		 *
+		 * @return {$q.promise} resolves to raw data from assembla
+		 */
+		function getMentions() {
+
+			var qObj = {
+				doNotPage: true,
+				parms: {
+				}
+			}
+
+			// showRead and showUnread are managed on the popup.  they determine which
+			// types of mentions to show.  Usually unread are preferred
+			if (bg.showRead && !bg.showUnread) {
+				qObj.parms.read = true;
+			} else if (bg.showUnread && !bg.showRead) {
+				qObj.parms.unread = true;
+			} else if (!bg.showRead && !bg.showUnread) {
+				// If neither are selected, then return an empty array and the alwaysFunction
+				bg.userMentions = [];
+				return $q.when(bg.userMentions);
+			}
+
+			return aas.getUserMentions(qObj)
+				.then(function(results) {
+					// Get the time of the last successful connection
+					bg.lastConnect = new Date();
+					var newUserMentions = [];
+					var data = results && results.data ? results.data : [];
+
+					// Set the userMentions data
+					data.forEach(function(mention) {
+						newUserMentions.push(mention);
+						// if the user info for the sende of this mention is not available, get it
+						var user = bg.users[mention.author_id]
+						if (!user || user.name=='not found') {
+							getUser(mention.author_id);
+						}
+					});
+					bg.userMentions = newUserMentions;
+
+					// Successful get -- green if there are any mentions, grey or hidden if none
+					// hideEmptyBadge is global setting to turn off the badge if the count is 0
+					var badgeText;
+					if (bg.userMentions.length>0) {
+						badgeText = bg.userMentions.length.toString();
+					} else if (bg.options.hideEmptyBadge) {
+						badgeText = '';
+					} else {
+						badgeText = '0'
+					}
+					// Set the badge
+					chrome.browserAction.setBadgeText({text: badgeText});
+					var color = bg.userMentions.length==0 ? '#A8A8A8' : '#00cc00'
+					chrome.browserAction.setBadgeBackgroundColor({'color':color});
+					return data;
+				}).catch(function (err) {
+					// If no connection, badge turns red but shows last known userMention length
+					//  if there have been any successful
+					// connections
+					chrome.browserAction.setBadgeText({text: !bg.lastConnect  ? "?!" : bg.userMentions.length.toString()});
+					var color =  '#FF0000'
+					chrome.browserAction.setBadgeBackgroundColor({'color':color});
+				});
+		}
+
+		/**
+		 * Ping Assembla API to ge tthe user info
+		 * @param  {string} id User Id from mentions
+		 * @return {$q.promise}    resolves to user object, if any
+		 */
+		function getUser(id) {
+			if (bg.usersBeingFetched.indexOf(id)>-1) return;
+			bg.usersBeingFetched.push(id);
+
+			return aas.getUser({userId: id}).then(function(results) {
+				bg.users[id] = results && results.data ? results.data : {};
+			}).catch(function(err) {
+				console.dir(err);
+				bg.users[id]={name:'not found'}
+			}).finally(function() {
+				if (bg.usersBeingFetched.indexOf(id)==-1) return;
+				bg.usersBeingFetched.splice(bg.usersBeingFetched.indexOf(id),1);
+			});
+		}
+
+		/**
+		 * Mark a specified mention as read on assembla
+		 * NOTE: this can be updated to use the assemble api service
+		 * @param  {string}  id           mention Id to mark read
+		 * @param  {Boolean} isSimulation Should this only simulate a deletion?
+		 * @return {$.Ajax.promise}               object with done: and error: functions
+		 */
+		function markMentionRead(id, isSimulation) {
+
+			// if this is a simulation, wait ten seconds and treat it as done
+			// but don't call the api
+			if (isSimulation) {
+				return $q.when('')
+					.then(function() {
+						return $timeout(function(){},10000);
+					});
+			}
+
+			return aas.markMentionAsRead({mentionId: id}).then(function(data) {
+				//console.dir(data);
+				// successful marking of the mention, get the current state of the mentions
+				return getMentions();
+			}).catch(function(err) {
+				//console.dir(err);
+			});
+		}
+
+}
