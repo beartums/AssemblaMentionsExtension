@@ -3,6 +3,9 @@ Chrome extension for managing Assembla Mentions
 
 Change Log:
 
+1.0.19
+ - Fix bug not updating options in background controller
+ 
 1.0.10-18
  - Changes to try to fix the 'this extension ay be corrupted' error in chrome
 
