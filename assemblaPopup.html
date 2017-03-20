@@ -1,17 +1,17 @@
-<html>
+<html style="min-width:720px; padding-left:0px;">
 <head>
 	<link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
 	<link href="css/font-awesome.min.css" rel="stylesheet" media="screen">
-	<link href="assembla.css" rel="stylesheet" media="screen">
+	<link href="css/assembla.css" rel="stylesheet" media="screen">
 </head>
-<body ng-app="app" style="width:720px; padding-left:30px;">
+<body ng-app="app" style="padding-left:25px">
 	<div ng-controller="popupController as pu">
 		<div class="container-fluid">
 			<!-- Title-->
 			<div class="row vertical-center">
 				<div class="col-xs-5 text-left">
 					<h4>
-						<img src = "assemblaShield-Oaf2-48.png" height="20" width = "20">
+						<img src = "AssemblaShield-oaf2-48.png" alt="Icon" height="20" width = "20">
 						Assembla Mentions/1AF
 						<small><small>
 							v{{pu.manifest.version}}
@@ -34,24 +34,24 @@
 							</button>
 						</span>
 						<span class="btn-group btn-group-xs">
-								<button type="button" class="btn btn-xs btn-default" title="Options page" ng-click="pu.openOptions()">
-									<span class="fa fa-gears"></span>
-								</button>
-								<button type="button" class="btn btn-xs btn-default" title="Refresh Mentions" ng-click="pu.refresh()">
-									<span class="fa fa-refresh" ng-class="{'fa-spin':pu.isRefreshing}"></span>
-								</button>
-								<button type="button" class="btn btn-xs btn-default" title="Toggle auto-updates" ng-click="pu.toggleApiUpdates()" ng-class="{'active': pu.bgPage.isPaused()}">
-									<span class="fa fa-minus-circle" ng-class="{'text-danger': pu.bgPage.isPaused()}">
-									</span>
-								</button>
-							</span>
+							<button type="button" class="btn btn-xs btn-default" title="Options page" ng-click="pu.openOptions()">
+								<span class="fa fa-gears"></span>
+							</button>
+							<button type="button" class="btn btn-xs btn-default" title="Refresh Mentions" ng-click="pu.refresh()">
+								<span class="fa fa-refresh" ng-class="{'fa-spin':pu.isRefreshing}"></span>
+							</button>
+							<button type="button" class="btn btn-xs btn-default" title="Toggle auto-updates" ng-click="pu.toggleApiUpdates()" ng-class="{'active': pu.bgPage.isPaused()}">
+								<span class="fa fa-minus-circle" ng-class="{'text-danger': pu.bgPage.isPaused()}">
+								</span>
+							</button>
 						</span>
+					</span>
 				</div>
 			</div>
 				<!-- Table -->
 			<div class="row table">
-				<!-- table head -->
 				<div class="col-xs-12">
+					<!-- table head -->
 					<div class="row table-head">
 						<div class="col-xs-1">By</div>
 						<div class="col-xs-2">Date</div>
@@ -77,13 +77,11 @@
 								</span>
 						</div>
 
-					</table>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-	<script src="js/jquery-2.0.3.min.js"></script>
-	<script src="js/bootstrap.min.js"></script>
 	<script src="js/angular.min.js" charset="utf-8"></script>
 	<script src="assemblaPopupMain.js" charset="utf-8"></script>
 	<script src="assemblaPopupController.js"></script>

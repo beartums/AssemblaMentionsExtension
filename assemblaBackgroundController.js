@@ -47,7 +47,8 @@ angular.module("app")
 			}
 			// Propagate the changes to the internal options object
 			for (let prop in changes) {
-				if (bg.options[prop || typeof bg.options[prop] === 'undefined']) {
+				let val = bg.options[prop]
+				if (val || typeof val === 'undefined' || val === "") {
 					bg.options[prop] = changes[prop].newValue;
 				}
 			}
