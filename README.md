@@ -3,6 +3,9 @@ Chrome extension for managing Assembla Mentions
 
 Change Log:
 
+1.0.10-18
+ - Changes to try to fix the 'this extension ay be corrupted' error in chrome
+
 1.0.9
  - Fiddling with popup page styling (handling extension weirdness)
  - Better options handling (watch for changes and restart mention-watch loop immediately, if appropriate)
