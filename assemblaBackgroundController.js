@@ -47,18 +47,17 @@ angular.module("app")
 			}
 			// Propagate the changes to the internal options object
 			for (let prop in changes) {
-				let val = bg.options[prop]
-				if (val || typeof val === 'undefined' || val === "") {
+				if (changes.hasOwnProperty(prop)) {
 					bg.options[prop] = changes[prop].newValue;
 				}
 			}
 			// if the changes affect the mention watch in any way, restart the loop
-			if (changes.secret || changes.key || changes.mentionWatchInterval) {
+			//if (changes.secret || changes.key || changes.mentionWatchInterval || cha) {
 				if (!_updatesPaused)  {
 					$timeout.cancel(_mentionsPromise);
 					startMentionWatch();
 				}
-			}
+			//}
 		});
 
 		return bg;
