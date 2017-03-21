@@ -3,12 +3,12 @@
 
 	"name": "Assembla Mentions",
 	"description": "Assembla Mentions Badge and List",
-	"short_name": "Assembla/1AF",
+	"short_name": "Assembla Mentions",
 	"version": "1.0.20",
 	"icons": {
-		"16": "AssemblaShield-oaf2-16.png",
-		"48": "AssemblaShield-oaf2-48.png",
-		"128": "AssemblaShield-oaf2-128.png"
+		"16": "assembla-logo-shield-bleed-convos-16.png",
+		"48": "assembla-logo-shield-bleed-convos-48.png",
+		"128": "assembla-logo-shield-bleed-convos-128.png"
 	},
 	"options_ui": {
 		"page": "assemblaOptions.html",
@@ -18,7 +18,7 @@
 		"page": "assemblaBackground.html"
 	},
 	"browser_action": {
-		"default_icon": "AssemblaShield-oaf2-128.png",
+		"default_icon": "assembla-logo-shield-bleed-convos-128.png",
 		"default_popup": "assemblaPopup.html",
 		"default_title": "Assembla Mentions"
 	},
