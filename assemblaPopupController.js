@@ -20,6 +20,8 @@ angular.module("app")
 		pu.toggleMentionType = toggleMentionType;
 		pu.openOptions = openOptions;
 		pu.toggleApiUpdates = toggleApiUpdates;
+		pu.getMentionTypeAbbreviation = getMentionTypeAbbreviation;
+		pu.getMentionType = getMentionType;
 
 		// Watch for changes to the userMentions array so they can be propagated
 		$scope.$watch('pu.bgPage.userMentions', function(newVal,oldVal) {
@@ -190,6 +192,21 @@ angular.module("app")
 
 			return "AHHH.  I Don't Know!!"
 
+		}
+
+		function getMentionTypeAbbreviation(url) {
+			let parsed = pu.bgPage.parseUrl(url);
+			let words = parsed.type.split(" ");
+			let abbreviation = "";
+			words.forEach(function(word) {
+				abbreviation += word.substr(0,1);
+			})
+			return abbreviation.toUpperCase();
+		}
+
+		function getMentionType(url) {
+			let parsed = pu.bgPage.parseUrl(url);
+			return parsed.type;
 		}
 
 		/**

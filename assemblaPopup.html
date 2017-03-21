@@ -11,7 +11,7 @@
 			<div class="row vertical-center">
 				<div class="col-xs-5 text-left">
 					<h4>
-						<img src = "AssemblaShield-oaf2-48.png" alt="Icon" height="20" width = "20">
+						<img ng-src="{{pu.manifest.icons[48]}}" alt="Icon" height="20" width = "20">
 						Assembla Mentions/1AF
 						<small><small>
 							v{{pu.manifest.version}}
@@ -53,24 +53,33 @@
 				<div class="col-xs-12">
 					<!-- table head -->
 					<div class="row table-head">
-						<div class="col-xs-1">By</div>
-						<div class="col-xs-2">Date</div>
+						<div class="col-xs-3">By &nbsp; Date</div>
+						<!--div class="col-xs-2">Date</div-->
 						<div class="col-xs-8">Message</div>
 						<div class="col-xs-1"></div>
 					</div>
 					<!-- Table Data -->
-					<div class="row table-row" ng-repeat="m in pu.userMentions" ng-click="pu.gotoUrl(m)">
-							<div class="col-xs-1" ng-attr-title="{{m.author_id | authorName: pu.bgPage.users}}" ng-class="{transparent:m.isBeingDeleted}">
-								<small>{{m.author_id | authorInitials: pu.bgPage.users}}</small>
-							</div>
-							<div class="col-xs-2" ng-attr-title="{{m.created_at | date: 'yyyy'}}" ng-class="{transparent:m.isBeingDeleted}">
-								<small><small>{{m.created_at  | date: 'MM-dd hh:mm'}}</small></small>
+					<div class="row table-row vertical-center" ng-repeat="m in pu.userMentions" ng-click="pu.gotoUrl(m)">
+							<div class="col-xs-3 vertical-center" ng-class="{transparent:m.isBeingDeleted}">
+								<small ng-attr-title="{{m.author_id | authorName: pu.bgPage.users}}" >{{m.author_id | authorInitials: pu.bgPage.users}}</small>
+								&nbsp; &nbsp;
+							<!--/div>
+							<div class="col-xs-2" ng-attr-title="{{m.created_at | date: 'yyyy'}}" ng-class="{transparent:m.isBeingDeleted}"-->
+								<small><small ng-attr-title="{{m.created_at  | date: 'MM-dd-yyyy hh:mm a'}}">
+										{{m.created_at  | date: 'MM-dd hh:mm'}}
+								</small></small>
+								&nbsp; &nbsp;
+								<small><small>
+									<span class='label' ng-class="'label-' + (pu.getMentionTypeAbbreviation(m.link)=='MC' ? 'danger' : 'success')" ng-attr-title="{{pu.getMentionType(m.link)}}">
+										{{pu.getMentionTypeAbbreviation(m.link)}}
+									</span>
+								</small></small>
 							</div>
 							<div class="col-xs-8" ng-class="{transparent:m.isBeingDeleted}">
 								<small>{{m.message}}</small>
 							</div>
 							<div class="col-xs-1">
-								<button type="button" class="close blur-hide" prevent-default ng-click="pu.markAsRead(m)"  ng-if="!m.isBeingDeleted && !m.read">
+								<button type="button" class="close blur-hide" prevent-default ng-click="pu.markAsRead(m)"  ng-if="!m.isBeingDeleted && !m.read" title="Mark this mention as read">
 									<span aria-hidden="true">&times;</span>
 								</button>
 								<span class="fa fa-spinner fa-spin" ng-if="m.isBeingDeleted" prevent-default ng-click="pu.markAsRead(m)">

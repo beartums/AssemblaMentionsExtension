@@ -3,9 +3,15 @@ Chrome extension for managing Assembla Mentions
 
 Change Log:
 
+1.0.20
+ - Retrieve popup icon image from manifest rather than hard code
+ - Add Icons and manifest for generalized version (rename manifest_generic.json to manifest.json)
+ - Add label indicating mention source (TD, TC, MC)
+
+
 1.0.19
  - Fix bug not updating options in background controller
- 
+
 1.0.10-18
  - Changes to try to fix the 'this extension ay be corrupted' error in chrome
 

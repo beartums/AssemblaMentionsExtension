@@ -32,6 +32,7 @@ angular.module("app")
 		bg.pauseUpdates = pauseUpdates;
 		bg.startUpdates = startUpdates;
 		bg.isPaused = isPaused;
+		bg.parseUrl = parseUrl;
 
 		// load the options from storage
 		aos.setOnReadyHandler(init);
@@ -213,4 +214,7 @@ angular.module("app")
 			});
 		}
 
+		function parseUrl(url) {
+			return aas.parseUrl(url);
+		}
 }

@@ -30,8 +30,24 @@ angular.module("app")
 			getUpdatedTickets: getUpdatedTickets,
 			getUserMentions: getUserMentions,
 			findFirstUpdatedSince: findFirstUpdatedSince,
-      init: init
+      init: init,
+			parseUrl: parseUrl
     };
+
+		// comments return a url to direct the browser to the location of the comment.  If
+		// we want to pull more informtion ofr the comment without navigating there, we
+		// have to parse the display url
+		_parsingRegExps = [
+			// https://www.assembla.com/spaces/oaftrac/tickets/6087/details?comment=1174253823
+			// Groups:  1 - Space, 2 - TicketId, 3 - CommentId
+			{ type: 'ticket comment',  props: ['space_id', 'ticket_id', 'comment_id'], re: /spaces\/([^\/]*)\/tickets\/(\d*)\/details\?comment=(\d*)/ },
+			// https://www.assembla.com/spaces/oaftrac/tickets/6087
+			// Groups: 1 - space, 2 - TicketId
+			{ type: 'ticket description', props: [ 'space_id', 'ticket_id' ], re: /spaces\/[^\/]*\/tickets\/(\d*)/ },
+			// https://www.assembla.com/code/oaftrac/git-18/merge_requests/4670433?version=1
+			// Groups: 1 - space, 2 - tool, 3 - mergeRequestId, 4 - version#
+			{ type: 'merge comment',  props: ['space_id', 'space_tool_id', 'ticket_id', 'version'], re: /code\/([^\/]*)\/([^\/]*)\/merge_requests\/(\d*)\?version=(\d*)/ }
+		]
 
     return asf;
 
@@ -109,7 +125,7 @@ angular.module("app")
 			}
 
 			return $http(config);
-			
+
 			return $http.put(url,null,reqObj.headers);
 		}
 
@@ -235,4 +251,21 @@ angular.module("app")
       if (parms.length > 0) return "?" + parms.join("&");
 			return "";
 		}
+
+		function parseUrl(url) {
+			for (let i = 0; i < _parsingRegExps.length; i++) {
+				let parser = _parsingRegExps[i];
+				let parsed = url.match(parser.re)
+				if (parsed) {
+					let result = {};
+					result.type = parser.type;
+					for (let j = 0; j < parser.props.length; j++) {
+						if (parsed.length < j+1) return result;
+						result[parser.props[j]] = parsed[j+1];
+					}
+					return result;
+				}
+			}
+		}
+
   }]);
