@@ -15,6 +15,7 @@ angular.module("app")
 		bg.options = aos.options;
 		bg.aos = aos;
 		bg.userMentions = [];
+		bg.sources = {};
 		bg.users = {};
 		bg.lastConnect;
 		bg.usersBeingFetched = [];
@@ -33,6 +34,7 @@ angular.module("app")
 		bg.startUpdates = startUpdates;
 		bg.isPaused = isPaused;
 		bg.parseUrl = parseUrl;
+		bg.fetchMentionSourceComment = fetchMentionSourceComment;
 
 		// load the options from storage
 		aos.setOnReadyHandler(init);
@@ -99,9 +101,33 @@ angular.module("app")
 			return _updatesPaused;
 		}
 
+		function fetchMentionSourceComment(mention) {
+			var parsedUrl = aas.parseUrl(mention.link)
+			return aas.fetchSourceCommentText(parsedUrl,mention.message)
+				.then(function(source) {
+					$timeout(function() {
+						// Put source in a reference object so that when mentions are updated, the
+						// reference is still there
+						bg.sources[mention.id] = source;
+						// also return the source, in case the caller wants to do something
+						// with it
+						return source;
+					});
+				});
+		}
+
+		function cleanupSources(mentions, sources) {
+			let mentionsObj = {};
+			for (let i = 0; i < mentions.length; i++) {
+				mentionsObj[mentions[i].id] = mentions[i];
+			}
+			for (let prop in sources) {
+				if (!mentionsObj[prop]) delete sources[prop];
+			}
+		}
+
 		/**
-		 * Get the mentions from assembla if can connection.
-		 *
+		 * Get the mentions from assembla if can connect.
 		 * @return {$q.promise} resolves to raw data from assembla
 		 */
 		function getMentions() {
@@ -141,6 +167,7 @@ angular.module("app")
 						}
 					});
 					bg.userMentions = newUserMentions;
+					cleanupSources(bg.userMentions, bg.sources);
 
 					// Successful get -- green if there are any mentions, grey or hidden if none
 					// hideEmptyBadge is global setting to turn off the badge if the count is 0

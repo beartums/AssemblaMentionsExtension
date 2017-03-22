@@ -1,13 +1,21 @@
 # AssemblaMentions
 Chrome extension for managing Assembla Mentions
 
+Coming Attractions (someday):
+ - Get full text of source of mentions, when requested
+ - Further improvements in user lookup calls
+ - get merge description mentions (big)
+ - display error messages
+
 Change Log:
 
+1.1.0
+ - Retrieve the full text of a comment from the source object when clicking on the source-type label to the right of the date
+ 
 1.0.20
- - Retrieve popup icon image from manifest rather than hard code
+ - Retrieve popup icon image path from manifest rather than hard code
  - Add Icons and manifest for generalized version (rename manifest_generic.json to manifest.json)
  - Add label indicating mention source (TD, TC, MC)
-
 
 1.0.19
  - Fix bug not updating options in background controller
@@ -36,7 +44,3 @@ Change Log:
 1.0.6
  - Interface cleanup
  - Read unread and/or read mentions (only unread by default)
-
- To Do:
-  - Get full text of source of mentions, when requested
-  - Further improvements in user lookup calls

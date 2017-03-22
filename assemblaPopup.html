@@ -4,11 +4,12 @@
 	<link href="css/font-awesome.min.css" rel="stylesheet" media="screen">
 	<link href="css/assembla.css" rel="stylesheet" media="screen">
 </head>
-<body ng-app="app" style="padding-left:25px">
+<body ng-app="app" style="padding-left:25px; overflow-x:hidden;">
 	<div ng-controller="popupController as pu">
 		<div class="container-fluid">
 			<!-- Title-->
 			<div class="row vertical-center">
+				<!-- Extension name and logo -->
 				<div class="col-xs-5 text-left">
 					<h4>
 						<img ng-src="{{pu.manifest.icons[48]}}" alt="Icon" height="20" width = "20">
@@ -18,28 +19,35 @@
 						</small></small>
 					</h4>
 				</div>
+				<!-- Time since last update -->
 				<div class="col-xs-4 text-right">
 					<small>
 						<small>last updated: <strong>{{pu.getElapsedTime()}}</strong></small>
 					</small>
 				</div>
+				<!-- button Toolbar -->
 				<div class="col-xs-3">
 					<span class="btn-toolbar btn-toolbar-xs">
 						<span class="btn-group btn-group-xs">
+							<!-- Show Unread messages Toggle -->
 							<button type="button" class="btn btn-xs btn-default" title="Show unread mentions" ng-class="{'btn-primary':pu.bgPage.showUnread}" ng-click="pu.toggleMentionType('showUnread')">
 								<span class="fa fa-envelope-o"></span>
 							</button>
+							<!-- Show Read messages Toggle -->
 							<button type="button" class="btn btn-xs btn-default" title="Show read mentions" ng-class="{'btn-primary':pu.bgPage.showRead}" ng-click="pu.toggleMentionType('showRead')">
 								<span class="fa fa-envelope-open-o"></span>
 							</button>
 						</span>
 						<span class="btn-group btn-group-xs">
+							<!-- Open Options Page -->
 							<button type="button" class="btn btn-xs btn-default" title="Options page" ng-click="pu.openOptions()">
 								<span class="fa fa-gears"></span>
 							</button>
+							<!-- Refresh mentions -->
 							<button type="button" class="btn btn-xs btn-default" title="Refresh Mentions" ng-click="pu.refresh()">
 								<span class="fa fa-refresh" ng-class="{'fa-spin':pu.isRefreshing}"></span>
 							</button>
+							<!-- Toggle updates on and off -->
 							<button type="button" class="btn btn-xs btn-default" title="Toggle auto-updates" ng-click="pu.toggleApiUpdates()" ng-class="{'active': pu.bgPage.isPaused()}">
 								<span class="fa fa-minus-circle" ng-class="{'text-danger': pu.bgPage.isPaused()}">
 								</span>
@@ -59,38 +67,53 @@
 						<div class="col-xs-1"></div>
 					</div>
 					<!-- Table Data -->
+					<!-- outer row (mention data and source data, if found) -->
 					<div class="row table-row vertical-center" ng-repeat="m in pu.userMentions" ng-click="pu.gotoUrl(m)">
-							<div class="col-xs-3 vertical-center" ng-class="{transparent:m.isBeingDeleted}">
-								<small ng-attr-title="{{m.author_id | authorName: pu.bgPage.users}}" >{{m.author_id | authorInitials: pu.bgPage.users}}</small>
-								&nbsp; &nbsp;
-							<!--/div>
-							<div class="col-xs-2" ng-attr-title="{{m.created_at | date: 'yyyy'}}" ng-class="{transparent:m.isBeingDeleted}"-->
-								<small><small ng-attr-title="{{m.created_at  | date: 'MM-dd-yyyy hh:mm a'}}">
-										{{m.created_at  | date: 'MM-dd hh:mm'}}
-								</small></small>
-								&nbsp; &nbsp;
-								<small><small>
-									<span class='label' ng-class="'label-' + (pu.getMentionTypeAbbreviation(m.link)=='MC' ? 'danger' : 'success')" ng-attr-title="{{pu.getMentionType(m.link)}}">
-										{{pu.getMentionTypeAbbreviation(m.link)}}
+						<div class="col-xs-12">
+							<!-- Inner Row #1: Mention data only -->
+							<div class="row">
+								<!--By/Date/Source Type column-->
+								<div class="col-xs-3 vertical-center" ng-class="{transparent:m.isBeingDeleted}">
+									<small ng-attr-title="{{m.author_id | authorName: pu.bgPage.users}}" >{{m.author_id | authorInitials: pu.bgPage.users}}</small>
+									&nbsp; &nbsp;
+									<small><small ng-attr-title="{{m.created_at  | date: 'MM-dd-yyyy hh:mm a'}}">
+											{{m.created_at  | date: 'MM-dd hh:mm'}}
+									</small></small>
+									&nbsp; &nbsp;
+									<small><small>
+										<span class='label' prevent-default ng-class="'label-' + (pu.getMentionTypeAbbreviation(m.link)=='MC' ? 'danger' : 'success')" ng-attr-title="{{pu.getMentionType(m.link)}}" ng-click="pu.getMentionSourceComment(m)">
+											{{pu.getMentionTypeAbbreviation(m.link)}}
+										</span>
+									</small></small>
+									&nbsp;
+									<span class="fa" ng-if="pu.mentionSources[m.id]" ng-class="'fa-' + (pu.mentionSources[m.id].show ? 'minus' : 'plus')" ng-click="pu.mentionSources[m.id].show = !pu.mentionSources[m.id].show" prevent-default>
 									</span>
-								</small></small>
+								</div>
+								<!-- Mention text column -->
+								<div class="col-xs-8" ng-class="{transparent:m.isBeingDeleted}">
+									<small>{{m.message}}</small>
+								</div>
+								<!-- close button/isDeleting column -->
+								<div class="col-xs-1">
+									<button type="button" class="close blur-hide" prevent-default ng-click="pu.markAsRead(m)"  ng-if="!m.isBeingDeleted && !m.read" title="Mark this mention as read">
+										<span aria-hidden="true">&times;</span>
+									</button>
+									<span class="fa fa-spinner fa-spin" ng-if="m.isBeingDeleted" prevent-default ng-click="pu.markAsRead(m)">
+									</span>
+								</div>
 							</div>
-							<div class="col-xs-8" ng-class="{transparent:m.isBeingDeleted}">
-								<small>{{m.message}}</small>
-							</div>
-							<div class="col-xs-1">
-								<button type="button" class="close blur-hide" prevent-default ng-click="pu.markAsRead(m)"  ng-if="!m.isBeingDeleted && !m.read" title="Mark this mention as read">
-									<span aria-hidden="true">&times;</span>
-								</button>
-								<span class="fa fa-spinner fa-spin" ng-if="m.isBeingDeleted" prevent-default ng-click="pu.markAsRead(m)">
-								</span>
+							<!-- Inner Row #2: source object comment text -->
+							<div class="row" ng-if="pu.mentionSources[m.id] && pu.mentionSources[m.id].show">
+								<div class="col-xs-8 col-xs-offset-3">
+									{{pu.mentionSources[m.id].comment}}
+								</div>
+							</div> <!-- Inner Row 2 -->
 						</div>
-
-					</div>
+					</div> <!-- Outer Row -->
 				</div>
-			</div>
-		</div>
-	</div>
+			</div> <!-- table -->
+		</div> <!-- Container -->
+	</div> <!-- unnecessary Div ?? -->
 	<script src="js/angular.min.js" charset="utf-8"></script>
 	<script src="assemblaPopupMain.js" charset="utf-8"></script>
 	<script src="assemblaPopupController.js"></script>

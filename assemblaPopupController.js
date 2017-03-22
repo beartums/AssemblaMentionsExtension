@@ -11,6 +11,7 @@ angular.module("app")
 
 		pu.bgPage = chrome.extension.getBackgroundPage().bg;
 		pu.manifest = chrome.runtime.getManifest();
+		pu.mentionSources = pu.bgPage.sources;
 
 		pu.gotoUrl = gotoUrl;
 		pu.authorInitials = authorInitials;
@@ -22,6 +23,7 @@ angular.module("app")
 		pu.toggleApiUpdates = toggleApiUpdates;
 		pu.getMentionTypeAbbreviation = getMentionTypeAbbreviation;
 		pu.getMentionType = getMentionType;
+		pu.getMentionSourceComment = getMentionSourceComment;
 
 		// Watch for changes to the userMentions array so they can be propagated
 		$scope.$watch('pu.bgPage.userMentions', function(newVal,oldVal) {
@@ -192,6 +194,17 @@ angular.module("app")
 
 			return "AHHH.  I Don't Know!!"
 
+		}
+
+		function getMentionSourceComment(mention) {
+			pu.bgPage.fetchMentionSourceComment(mention)
+				.then(function(source) {
+					if (source.comment !== mention.message) {
+						$timeout(function() {
+							source.show = true;
+						})
+					}
+				});
 		}
 
 		function getMentionTypeAbbreviation(url) {
