@@ -11,7 +11,8 @@ Change Log:
 
 1.1.0
  - Retrieve the full text of a comment from the source object when clicking on the source-type label to the right of the date
- 
+ - replace partial text with full text if retrieved, with highlighting of partial text
+
 1.0.20
  - Retrieve popup icon image path from manifest rather than hard code
  - Add Icons and manifest for generalized version (rename manifest_generic.json to manifest.json)

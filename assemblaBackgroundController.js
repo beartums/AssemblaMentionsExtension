@@ -111,8 +111,8 @@ angular.module("app")
 						bg.sources[mention.id] = source;
 						// also return the source, in case the caller wants to do something
 						// with it
-						return source;
 					});
+					return source;
 				});
 		}
 

@@ -24,6 +24,8 @@ angular.module("app")
 		pu.getMentionTypeAbbreviation = getMentionTypeAbbreviation;
 		pu.getMentionType = getMentionType;
 		pu.getMentionSourceComment = getMentionSourceComment;
+		pu.getMentionHtml = getMentionHtml;
+		pu.toggleHideFullComment = toggleHideFullComment;
 
 		// Watch for changes to the userMentions array so they can be propagated
 		$scope.$watch('pu.bgPage.userMentions', function(newVal,oldVal) {
@@ -207,6 +209,21 @@ angular.module("app")
 				});
 		}
 
+		function getMentionHtml(mention,fullComment) {
+			//mention = mention.replace(/\n/g,'<br />')
+			let message = {
+				mention: mention.message
+			}
+			//fullComment = fullComment.replace(/\n/g,'<br />')
+			if (!fullComment || mention.hideFullComment) return message;
+			let idx = fullComment.indexOf(mention.message);
+			if (idx == -1 || fullComment == mention.message) return message;
+			let clauses = fullComment.replace(mention.message,"~~#~~").split("~~#~~")
+			message.before = idx>-1 ? clauses[0] : "";
+			message.after = clauses.length > 1 || idx==-1 ? clauses[clauses.length-1] : "";
+			return message
+		}
+
 		function getMentionTypeAbbreviation(url) {
 			let parsed = pu.bgPage.parseUrl(url);
 			let words = parsed.type.split(" ");
@@ -233,6 +250,10 @@ angular.module("app")
 				return str.replace(/s$/,'');
 			}
 			return str;
+		}
+
+		function toggleHideFullComment(mention) {
+			mention.hideFullComment = !mention.hideFullComment;
 		}
 
 		/**

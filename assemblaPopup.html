@@ -60,61 +60,61 @@
 			<div class="row table">
 				<div class="col-xs-12">
 					<!-- table head -->
-					<div class="row table-head">
-						<div class="col-xs-3">By &nbsp; Date</div>
-						<!--div class="col-xs-2">Date</div-->
-						<div class="col-xs-8">Message</div>
-						<div class="col-xs-1"></div>
-					</div>
+					<small>
+					<table class="mentions-table">
+						<tr>
+							<th width="5%">By</th>
+							<th width="13%">Date</th>
+							<th width="5%">Type</th>
+							<th width="4%"></th>
+							<th>Message</th>
+							<th width="3%"></th>
+						</tr>
 					<!-- Table Data -->
-					<!-- outer row (mention data and source data, if found) -->
-					<div class="row table-row vertical-center" ng-repeat="m in pu.userMentions" ng-click="pu.gotoUrl(m)">
-						<div class="col-xs-12">
-							<!-- Inner Row #1: Mention data only -->
-							<div class="row">
-								<!--By/Date/Source Type column-->
-								<div class="col-xs-3 vertical-center" ng-class="{transparent:m.isBeingDeleted}">
-									<small ng-attr-title="{{m.author_id | authorName: pu.bgPage.users}}" >{{m.author_id | authorInitials: pu.bgPage.users}}</small>
-									&nbsp; &nbsp;
-									<small><small ng-attr-title="{{m.created_at  | date: 'MM-dd-yyyy hh:mm a'}}">
-											{{m.created_at  | date: 'MM-dd hh:mm'}}
-									</small></small>
-									&nbsp; &nbsp;
-									<small><small>
-										<span class='label' prevent-default ng-class="'label-' + (pu.getMentionTypeAbbreviation(m.link)=='MC' ? 'danger' : 'success')" ng-attr-title="{{pu.getMentionType(m.link)}}" ng-click="pu.getMentionSourceComment(m)">
-											{{pu.getMentionTypeAbbreviation(m.link)}}
-										</span>
-									</small></small>
-									&nbsp;
-									<span class="fa" ng-if="pu.mentionSources[m.id]" ng-class="'fa-' + (pu.mentionSources[m.id].show ? 'minus' : 'plus')" ng-click="pu.mentionSources[m.id].show = !pu.mentionSources[m.id].show" prevent-default>
+						<tr ng-repeat="m in pu.userMentions" ng-click="pu.gotoUrl(m)" ng-init="">
+							<td ng-class="{transparent:m.isBeingDeleted}">
+								<small ng-attr-title="{{m.author_id | authorName: pu.bgPage.users}}" >{{m.author_id | authorInitials: pu.bgPage.users}}
+								</small>
+							</td>
+							<td ng-class="{transparent:m.isBeingDeleted}">
+								<small ng-attr-title="{{m.created_at  | date: 'MM-dd-yyyy hh:mm a'}}">
+										{{m.created_at  | date: 'MM-dd hh:mm'}}
+								</small>
+							</td>
+							<td class="type-column" ng-class="{transparent:m.isBeingDeleted}">
+								<small><small>
+									<span class='label' prevent-default ng-class="'label-' + (pu.getMentionTypeAbbreviation(m.link)=='MC' ? 'danger' : 'success')" ng-attr-title="{{pu.getMentionType(m.link)}}" ng-click="pu.getMentionSourceComment(m)">
+										{{pu.getMentionTypeAbbreviation(m.link)}}
 									</span>
-								</div>
-								<!-- Mention text column -->
-								<div class="col-xs-8" ng-class="{transparent:m.isBeingDeleted}">
-									<small>{{m.message}}</small>
-								</div>
-								<!-- close button/isDeleting column -->
-								<div class="col-xs-1">
-									<button type="button" class="close blur-hide" prevent-default ng-click="pu.markAsRead(m)"  ng-if="!m.isBeingDeleted && !m.read" title="Mark this mention as read">
-										<span aria-hidden="true">&times;</span>
-									</button>
-									<span class="fa fa-spinner fa-spin" ng-if="m.isBeingDeleted" prevent-default ng-click="pu.markAsRead(m)">
-									</span>
-								</div>
-							</div>
-							<!-- Inner Row #2: source object comment text -->
-							<div class="row" ng-if="pu.mentionSources[m.id] && pu.mentionSources[m.id].show">
-								<div class="col-xs-8 col-xs-offset-3">
-									{{pu.mentionSources[m.id].comment}}
-								</div>
-							</div> <!-- Inner Row 2 -->
-						</div>
-					</div> <!-- Outer Row -->
+								</small></small>
+							</td>
+							<td>
+								<span ng-if="pu.mentionSources[m.id].comment && pu.mentionSources[m.id].comment != m.message" class="fa" ng-class="'fa-' + (m.hideFullComment ? 'toggle-right' : 'toggle-down')" prevent-default ng-click="m.hideFullComment = !m.hideFullComment">
+								</span>
+							</td>
+							<td>
+								<small>
+									{{msg=pu.getMentionHtml(m,pu.mentionSources[m.id].comment);""}}
+									<pre ng-if="msg.before || msg.after"><span ng-if="msg.before">{{msg.before}}</span><span class="bg-success">{{msg.mention}}</span><span ng-if="msg.after">{{msg.after}}</span></pre>
+									<pre ng-if="!msg.before && !msg.after"><span>{{msg.mention}}</span></pre>
+								</small>
+							</td>
+							<td ng-class="{transparent:m.isBeingDeleted}">
+								<button type="button" class="close blur-hide" prevent-default ng-click="pu.markAsRead(m)"  ng-if="!m.isBeingDeleted && !m.read" title="Mark this mention as read">
+									<span aria-hidden="true">&times;</span>
+								</button>
+								<span class="fa fa-spinner fa-spin" ng-if="m.isBeingDeleted" prevent-default ng-click="pu.markAsRead(m)">
+								</span>
+							</td>
+						</tr>
+					</table>
+				</small>
 				</div>
 			</div> <!-- table -->
 		</div> <!-- Container -->
 	</div> <!-- unnecessary Div ?? -->
 	<script src="js/angular.min.js" charset="utf-8"></script>
+	<script src="js/angular-sanitize-1.4.0.js" charset="utf-8"></script>
 	<script src="assemblaPopupMain.js" charset="utf-8"></script>
 	<script src="assemblaPopupController.js"></script>
 </body>
