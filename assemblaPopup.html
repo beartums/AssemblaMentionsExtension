@@ -4,11 +4,12 @@
 	<link href="css/font-awesome.min.css" rel="stylesheet" media="screen">
 	<link href="css/assembla.css" rel="stylesheet" media="screen">
 </head>
-<body ng-app="app" style="padding-left:25px">
+<body ng-app="app" style="padding-left:25px; overflow-x:hidden;">
 	<div ng-controller="popupController as pu">
 		<div class="container-fluid">
 			<!-- Title-->
 			<div class="row vertical-center">
+				<!-- Extension name and logo -->
 				<div class="col-xs-5 text-left">
 					<h4>
 						<img ng-src="{{pu.manifest.icons[48]}}" alt="Icon" height="20" width = "20">
@@ -18,28 +19,35 @@
 						</small></small>
 					</h4>
 				</div>
+				<!-- Time since last update -->
 				<div class="col-xs-4 text-right">
 					<small>
 						<small>last updated: <strong>{{pu.getElapsedTime()}}</strong></small>
 					</small>
 				</div>
+				<!-- button Toolbar -->
 				<div class="col-xs-3">
 					<span class="btn-toolbar btn-toolbar-xs">
 						<span class="btn-group btn-group-xs">
+							<!-- Show Unread messages Toggle -->
 							<button type="button" class="btn btn-xs btn-default" title="Show unread mentions" ng-class="{'btn-primary':pu.bgPage.showUnread}" ng-click="pu.toggleMentionType('showUnread')">
 								<span class="fa fa-envelope-o"></span>
 							</button>
+							<!-- Show Read messages Toggle -->
 							<button type="button" class="btn btn-xs btn-default" title="Show read mentions" ng-class="{'btn-primary':pu.bgPage.showRead}" ng-click="pu.toggleMentionType('showRead')">
 								<span class="fa fa-envelope-open-o"></span>
 							</button>
 						</span>
 						<span class="btn-group btn-group-xs">
+							<!-- Open Options Page -->
 							<button type="button" class="btn btn-xs btn-default" title="Options page" ng-click="pu.openOptions()">
 								<span class="fa fa-gears"></span>
 							</button>
+							<!-- Refresh mentions -->
 							<button type="button" class="btn btn-xs btn-default" title="Refresh Mentions" ng-click="pu.refresh()">
 								<span class="fa fa-refresh" ng-class="{'fa-spin':pu.isRefreshing}"></span>
 							</button>
+							<!-- Toggle updates on and off -->
 							<button type="button" class="btn btn-xs btn-default" title="Toggle auto-updates" ng-click="pu.toggleApiUpdates()" ng-class="{'active': pu.bgPage.isPaused()}">
 								<span class="fa fa-minus-circle" ng-class="{'text-danger': pu.bgPage.isPaused()}">
 								</span>
@@ -52,46 +60,59 @@
 			<div class="row table">
 				<div class="col-xs-12">
 					<!-- table head -->
-					<div class="row table-head">
-						<div class="col-xs-3">By &nbsp; Date</div>
-						<!--div class="col-xs-2">Date</div-->
-						<div class="col-xs-8">Message</div>
-						<div class="col-xs-1"></div>
-					</div>
+					<small>
+					<table class="mentions-table">
+						<tr>
+							<th width="5%">By</th>
+							<th width="13%">Date</th>
+							<th width="5%">Type</th>
+							<th width="4%"></th>
+							<th>Message</th>
+							<th width="3%"></th>
+						</tr>
 					<!-- Table Data -->
-					<div class="row table-row vertical-center" ng-repeat="m in pu.userMentions" ng-click="pu.gotoUrl(m)">
-							<div class="col-xs-3 vertical-center" ng-class="{transparent:m.isBeingDeleted}">
-								<small ng-attr-title="{{m.author_id | authorName: pu.bgPage.users}}" >{{m.author_id | authorInitials: pu.bgPage.users}}</small>
-								&nbsp; &nbsp;
-							<!--/div>
-							<div class="col-xs-2" ng-attr-title="{{m.created_at | date: 'yyyy'}}" ng-class="{transparent:m.isBeingDeleted}"-->
-								<small><small ng-attr-title="{{m.created_at  | date: 'MM-dd-yyyy hh:mm a'}}">
+						<tr ng-repeat="m in pu.userMentions" ng-click="pu.gotoMention(m)" ng-init="">
+							<td ng-class="{transparent:m.isBeingDeleted}">
+								<small ng-attr-title="{{m.author_id | authorName: pu.bgPage.users}}" >{{m.author_id | authorInitials: pu.bgPage.users}}
+								</small>
+							</td>
+							<td ng-class="{transparent:m.isBeingDeleted}">
+								<small ng-attr-title="{{m.created_at  | date: 'MM-dd-yyyy hh:mm a'}}">
 										{{m.created_at  | date: 'MM-dd hh:mm'}}
-								</small></small>
-								&nbsp; &nbsp;
+								</small>
+							</td>
+							<td class="type-column" ng-class="{transparent:m.isBeingDeleted}">
 								<small><small>
-									<span class='label' ng-class="'label-' + (pu.getMentionTypeAbbreviation(m.link)=='MC' ? 'danger' : 'success')" ng-attr-title="{{pu.getMentionType(m.link)}}">
+									<span class='label' prevent-default ng-class="'label-' + (pu.getMentionTypeAbbreviation(m.link)=='MC' ? 'danger' : 'success')" ng-attr-title="{{pu.getMentionType(m.link)}}" ng-click="pu.getMentionSourceComment(m)">
 										{{pu.getMentionTypeAbbreviation(m.link)}}
 									</span>
 								</small></small>
-							</div>
-							<div class="col-xs-8" ng-class="{transparent:m.isBeingDeleted}">
-								<small>{{m.message}}</small>
-							</div>
-							<div class="col-xs-1">
+							</td>
+							<td>
+								<span ng-if="pu.mentionSources[m.id].comment && pu.mentionSources[m.id].comment != m.message" class="fa" ng-class="'fa-' + (pu.mentionSources[m.id].hideFullComment ? 'toggle-right' : 'toggle-down')" prevent-default ng-click="pu.toggleHideFullComment(m)">
+								</span>
+							</td>
+							<td>
+								<small>
+									<pre ng-bind-html="pu.getMentionHtml(m)"></pre>
+							</small>
+							</td>
+							<td ng-class="{transparent:m.isBeingDeleted}">
 								<button type="button" class="close blur-hide" prevent-default ng-click="pu.markAsRead(m)"  ng-if="!m.isBeingDeleted && !m.read" title="Mark this mention as read">
 									<span aria-hidden="true">&times;</span>
 								</button>
 								<span class="fa fa-spinner fa-spin" ng-if="m.isBeingDeleted" prevent-default ng-click="pu.markAsRead(m)">
 								</span>
-						</div>
-
-					</div>
+							</td>
+						</tr>
+					</table>
+				</small>
 				</div>
-			</div>
-		</div>
-	</div>
+			</div> <!-- table -->
+		</div> <!-- Container -->
+	</div> <!-- unnecessary Div ?? -->
 	<script src="js/angular.min.js" charset="utf-8"></script>
+	<script src="js/angular-sanitize-1.4.0.js" charset="utf-8"></script>
 	<script src="assemblaPopupMain.js" charset="utf-8"></script>
 	<script src="assemblaPopupController.js"></script>
 </body>

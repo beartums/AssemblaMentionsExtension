@@ -1,4 +1,4 @@
-angular.module("app", [])
+angular.module("app", ['ngSanitize'])
 	.filter("authorInitials", function() {
 		return function(id,users) {
 			var author = users[id];

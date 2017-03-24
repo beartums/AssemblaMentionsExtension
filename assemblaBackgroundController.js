@@ -15,6 +15,8 @@ angular.module("app")
 		bg.options = aos.options;
 		bg.aos = aos;
 		bg.userMentions = [];
+		bg.sources = {};
+		//bg.mentionRefs = {};
 		bg.users = {};
 		bg.lastConnect;
 		bg.usersBeingFetched = [];
@@ -33,6 +35,7 @@ angular.module("app")
 		bg.startUpdates = startUpdates;
 		bg.isPaused = isPaused;
 		bg.parseUrl = parseUrl;
+		bg.fetchMentionSourceComment = fetchMentionSourceComment;
 
 		// load the options from storage
 		aos.setOnReadyHandler(init);
@@ -63,6 +66,11 @@ angular.module("app")
 
 		return bg;
 
+		/**
+		 * Initialize the Api service and start watching for mentions after the config
+		 * data is loaded into memory.  Called by the assemblaOptionService onReady handler
+		 * @return {[type]} [description]
+		 */
 		function init() {
 			aas.init({key: bg.options.key, secret: bg.options.secret});
 			startMentionWatch();
@@ -85,27 +93,75 @@ angular.module("app")
 			});
 		}
 
+		/**
+		 * Pause the timer updating the mention list
+		 * @return {void}
+		 */
 		function pauseUpdates() {
 			_updatesPaused = true;
 			let cancelled = $timeout.cancel(_mentionsPromise);
 		}
 
+		/**
+		 * Restart the timer for updating mentions
+		 * @return {void}
+		 */
 		function startUpdates() {
 			_updatesPaused = false;
 			startMentionWatch();
 		}
 
+		/**
+		 * Is the mention-update timer paused?
+		 * @return {Boolean} True if yes
+		 */
 		function isPaused() {
 			return _updatesPaused;
 		}
 
 		/**
-		 * Get the mentions from assembla if can connection.
-		 *
+		 * Get the source object for a specific mention (ticket, ticket Comment, Merg request)
+		 * @param  {mention} mention The mention to retrieve the source entity
+		 * @return {object}         The source entity
+		 */
+		function fetchMentionSourceComment(mention) {
+			var parsedUrl = aas.parseUrl(mention.link)
+			return aas.fetchSourceCommentText(parsedUrl,mention)
+				.then(function(source) {
+					$timeout(function() {
+						// Put source in a reference object so that when mentions are updated, the
+						// reference is still there
+						bg.sources[mention.id] = source;
+						// also return the source, in case the caller wants to do something
+						// with it
+					});
+					return source;
+				});
+		}
+
+		/**
+		 * Remove unreferenced sources from the sources object after reading updating the mentions
+		 * @param  {array} mentions The current user mentions
+		 * @param  {object} sources  the current sources
+		 * @return {void}
+		 */
+		function cleanupSources(mentions, sources) {
+			let mentionsObj = {};
+			for (let i = 0; i < mentions.length; i++) {
+				mentionsObj[mentions[i].id] = mentions[i];
+			}
+			for (let prop in sources) {
+				if (!mentionsObj[prop]) delete sources[prop];
+			}
+		}
+
+		/**
+		 * Get the mentions from assembla if can connect.
 		 * @return {$q.promise} resolves to raw data from assembla
 		 */
 		function getMentions() {
 
+			// query object used by AssemblaApiService
 			var qObj = {
 				doNotPage: true,
 				parms: {
@@ -141,6 +197,7 @@ angular.module("app")
 						}
 					});
 					bg.userMentions = newUserMentions;
+					cleanupSources(bg.userMentions, bg.sources);
 
 					// Successful get -- green if there are any mentions, grey or hidden if none
 					// hideEmptyBadge is global setting to turn off the badge if the count is 0
@@ -173,15 +230,18 @@ angular.module("app")
 		 * @return {$q.promise}    resolves to user object, if any
 		 */
 		function getUser(id) {
+			// check to see if this user is already being fetched.  Return if so.
 			if (bg.usersBeingFetched.indexOf(id)>-1) return;
 			bg.usersBeingFetched.push(id);
 
+			// ping assembla for the user
 			return aas.getUser({userId: id}).then(function(results) {
 				bg.users[id] = results && results.data ? results.data : {};
 			}).catch(function(err) {
 				console.dir(err);
 				bg.users[id]={name:'not found'}
 			}).finally(function() {
+				// remove user from the being-fetched object
 				if (bg.usersBeingFetched.indexOf(id)==-1) return;
 				bg.usersBeingFetched.splice(bg.usersBeingFetched.indexOf(id),1);
 			});
@@ -192,7 +252,7 @@ angular.module("app")
 		 * NOTE: this can be updated to use the assemble api service
 		 * @param  {string}  id           mention Id to mark read
 		 * @param  {Boolean} isSimulation Should this only simulate a deletion?
-		 * @return {$.Ajax.promise}               object with done: and error: functions
+		 * @return {$q.promise}               object with done: and error: functions
 		 */
 		function markMentionRead(id, isSimulation) {
 
@@ -214,6 +274,11 @@ angular.module("app")
 			});
 		}
 
+		/**
+		 * Parse the display url sothat we can build a url for retrieving data
+		 * @param  {string} url Assembla-provided display url
+		 * @return {object}     Object with referable parts of the url
+		 */
 		function parseUrl(url) {
 			return aas.parseUrl(url);
 		}

@@ -1,5 +1,5 @@
 angular.module("app")
-  .factory("assemblaApiService", ['$http', '$rootScope', function($http, $rootScope) {
+  .factory("assemblaApiService", ['$http', '$rootScope', '$q', function($http, $rootScope, $q) {
 
     var reqObj = {
 			method: "GET",
@@ -31,8 +31,11 @@ angular.module("app")
 			getUserMentions: getUserMentions,
 			findFirstUpdatedSince: findFirstUpdatedSince,
       init: init,
-			parseUrl: parseUrl
+			parseUrl: parseUrl,
+			fetchSourceCommentText: fetchSourceCommentText,
     };
+
+		_urlBase = "https://api.assembla.com";
 
 		// comments return a url to direct the browser to the location of the comment.  If
 		// we want to pull more informtion ofr the comment without navigating there, we
@@ -40,13 +43,29 @@ angular.module("app")
 		_parsingRegExps = [
 			// https://www.assembla.com/spaces/oaftrac/tickets/6087/details?comment=1174253823
 			// Groups:  1 - Space, 2 - TicketId, 3 - CommentId
-			{ type: 'ticket comment',  props: ['space_id', 'ticket_id', 'comment_id'], re: /spaces\/([^\/]*)\/tickets\/(\d*)\/details\?comment=(\d*)/ },
+			{
+				type: 'ticket comment',
+				source: 'ticket comment',
+				props: ['spaceId', 'ticketNumber', 'commentId'],
+				re: /spaces\/([^\/]*)\/tickets\/(\d*)\/details\?comment=(\d*)/,
+		 	},
 			// https://www.assembla.com/spaces/oaftrac/tickets/6087
 			// Groups: 1 - space, 2 - TicketId
-			{ type: 'ticket description', props: [ 'space_id', 'ticket_id' ], re: /spaces\/[^\/]*\/tickets\/(\d*)/ },
+			{
+				type: 'ticket description',
+				source: 'ticket',
+				props: [ 'spaceId', 'ticketNumber' ],
+				re: /spaces\/([^\/]*)\/tickets\/(\d*)/
+			},
+
 			// https://www.assembla.com/code/oaftrac/git-18/merge_requests/4670433?version=1
 			// Groups: 1 - space, 2 - tool, 3 - mergeRequestId, 4 - version#
-			{ type: 'merge comment',  props: ['space_id', 'space_tool_id', 'ticket_id', 'version'], re: /code\/([^\/]*)\/([^\/]*)\/merge_requests\/(\d*)\?version=(\d*)/ }
+			{
+				type: 'merge comment',
+				source: 'merge request version comment',
+				props: ['spaceId', 'spaceToolId', 'mergeRequestId', 'versionNumber'],
+				re: /code\/([^\/]*)\/([^\/]*)\/merge_requests\/(\d*)\?version=(\d*)/,
+			 }
 		]
 
     return asf;
@@ -59,55 +78,55 @@ angular.module("app")
     }
 
 		function getUsers(qObj) {
-		  var url = "https://api.assembla.com/v1/spaces/" + qObj.spaceId +
+		  var url = _urlBase + "/v1/spaces/" + qObj.spaceId +
         "/users.json";
 			if (qObj.parms) url += makeUrlParms(qObj.parms);
       return $http.get(url,reqObj);
 		}
 
 		function getUser(qObj) {
-		  var url = "https://api.assembla.com/v1/users/" + qObj.userId + ".json";
+		  var url = _urlBase + "/v1/users/" + qObj.userId + ".json";
 			if (qObj.parms) url += makeUrlParms(qObj.parms);
       return $http.get(url,reqObj);
 		}
 
 		function getTags(qObj) {
-		  var url = "https://api.assembla.com/v1/spaces/" + qObj.spaceId +
+		  var url = _urlBase + "/v1/spaces/" + qObj.spaceId +
         "/tags/active.json";
 			if (qObj.parms) url += makeUrlParms(qObj.parms);
       return $http.get(url,reqObj);
 		}
 
 		function getRoles(qObj) {
-		  var url = "https://api.assembla.com/v1/spaces/" + qObj.spaceId +
+		  var url = _urlBase + "/v1/spaces/" + qObj.spaceId +
         "/user_roles.json";
 			if (qObj.parms) url += makeUrlParms(qObj.parms);
       return $http.get(url,reqObj);
 		}
 
 		function getCustomFields(qObj) {
-		  var url = "https://api.assembla.com/v1/spaces/" + qObj.spaceId +
+		  var url = _urlBase + "/v1/spaces/" + qObj.spaceId +
         "/tickets/custom_fields.json";
 			if (qObj.parms) url += makeUrlParms(qObj.parms);
       return $http.get(url,reqObj);
 		}
 
     function getTickets(qObj) {
-      var url = "https://api.assembla.com/v1/spaces/" + qObj.spaceId +
+      var url = _urlBase + "/v1/spaces/" + qObj.spaceId +
         "/tickets/milestone/" + qObj.milestoneId + ".json";
 
       return getData(url,qObj);
     }
 
     function getUpdatedTickets(qObj) {
-      var url = "https://api.assembla.com/v1/spaces/" + qObj.spaceId +
+      var url = _urlBase + "/v1/spaces/" + qObj.spaceId +
         "/tickets.json";
       return getData(url,qObj);
 
     }
 
 		function updateTicket(qObj) {
-			var url = "https://api.assembla.com/spaces/" + qObj.spaceId +
+			var url = _urlBase + "/spaces/" + qObj.spaceId +
 				"/tickets/" + qObj.ticketNumber;
 			var hObj = angular.copy(reqObj.headers);
 			hObj["Content-type"]="application/json";
@@ -115,7 +134,7 @@ angular.module("app")
 		}
 
 		function markMentionAsRead(qObj) {
-			var url = "https://api.assembla.com/v1/user/mentions/" + qObj.mentionId +
+			var url = _urlBase + "/v1/user/mentions/" + qObj.mentionId +
 				"/mark_as_read.json";
 
 			var config = {
@@ -129,6 +148,8 @@ angular.module("app")
 			return $http.put(url,null,reqObj.headers);
 		}
 
+		// DOES NOT RESOLVE TO STANDARD promise.results.  Rather returns
+		// data directly
 		function getData(url, qObj, callingProcedure) {
 			if (!qObj.parms) qObj.parms = {};
 			if (!qObj.parms.per_page) qObj.parms.per_page = 100;
@@ -161,7 +182,7 @@ angular.module("app")
 		}
 
 		function getTicket(qObj) {
-			var url = "https://api.assembla.com/v1/spaces/" + qObj.spaceId +
+			var url = _urlBase + "/v1/spaces/" + qObj.spaceId +
         "/tickets/";
 			url += qObj.ticketId ? ("id/" + qObj.ticketId) : qObj.ticketNumber;
 			url += ".json";
@@ -172,43 +193,43 @@ angular.module("app")
 		}
 
 		function getActivity(qObj) {
-			var url = "https://api.assembla.com/v1/activity.json"
+			var url = _urlBase + "/v1/activity.json"
 
 			return getData(url,qObj);
 		}
 
     function getSpaces() {
-      var url = "https://api.assembla.com/v1/spaces.json"
+      var url = _urlBase + "/v1/spaces.json"
       return $http.get(url,reqObj)
     }
 
 		function getUserMentions(qObj) {
-      var url = "https://api.assembla.com/v1/user/mentions.json"
+      var url = _urlBase + "/v1/user/mentions.json"
       return getData(url,qObj)
     }
 
 	// type can be 'all', 'completed', or null
     function getMilestones(qObj) {
-      var url = "https://api.assembla.com/v1/spaces/" + qObj.spaceId +
+      var url = _urlBase + "/v1/spaces/" + qObj.spaceId +
           "/milestones" + (qObj.type ? "/" + qObj.type : "") + ".json";
 			if (qObj.parms) url += makeUrlParms(qObj.parms);
       return $http.get(url,reqObj);
     }
 
 		function getTicketComment(qObj) {
-			var url = "https://api.assembla.com/v1/spaces/" + qObj.spaceId +
+			var url = _urlBase + "/v1/spaces/" + qObj.spaceId +
           "/tickets/" + qObj.ticketNumber + "/ticket_comments/" + qObj.commentId + ".json";
-      return getData(url,qObj);
+      return $http.get(url,reqObj);
 		}
 
 		function getComments(qObj) {
-			var url = "https://api.assembla.com/v1/spaces/" + qObj.spaceId +
+			var url = _urlBase + "/v1/spaces/" + qObj.spaceId +
           "/tickets/" + qObj.ticketNumber + "/ticket_comments.json";
       return getData(url,qObj);
 		}
 
 		function saveComment(qObj) {
-			var url = "https://api.assembla.com/v1/spaces/" + qObj.spaceId +
+			var url = _urlBase + "/v1/spaces/" + qObj.spaceId +
 				"/tickets/" + qObj.ticketNumber + "/ticket_comments.json";
 			var hObj = angular.copy(reqObj.headers);
 			hObj["Content-type"]="application/json";
@@ -216,11 +237,18 @@ angular.module("app")
 		}
 
     function getStatuses(qObj) {
-      var url = "https://api.assembla.com/v1/spaces/" + qObj.spaceId +
+      var url = _urlBase + "/v1/spaces/" + qObj.spaceId +
           "/tickets/statuses.json";
 			if (qObj.parms) url += makeUrlParms(qObj.parms);
       return $http.get(url,reqObj);
     }
+
+		function getMergeRequestVersionComments(qObj) {
+			var url = _urlBase + `/v1/spaces/${qObj.spaceId}/space_tools/${qObj.spaceToolId}`;
+			url += `/merge_requests/${qObj.mergeRequestId}/versions/`;
+			url += `${qObj.versionNumber}/comments.json`;
+			return $http.get(url,reqObj);
+		}
 
 		function findFirstUpdatedSince(spaceId,date,lastInterval,lastRowRead,lastTicket) {
 			var url = "https://api.assempla.com/spaces/" + spaceId + "/tickets.json";
@@ -252,6 +280,13 @@ angular.module("app")
 			return "";
 		}
 
+		/**
+		 * Parse a interactive URl to determine what entity is described so that it can
+		 * be retrieved using the API.  This is necessary to retrieve the source documents for user mentions (which are always truncated frustratingly)
+		 * @param  {string} url url to the entity on the website
+		 * @return {object}     an object with the entity type and the identifying informtion
+		 *                         from the website url
+		 */
 		function parseUrl(url) {
 			for (let i = 0; i < _parsingRegExps.length; i++) {
 				let parser = _parsingRegExps[i];
@@ -259,13 +294,77 @@ angular.module("app")
 				if (parsed) {
 					let result = {};
 					result.type = parser.type;
+					result.values = {}
 					for (let j = 0; j < parser.props.length; j++) {
 						if (parsed.length < j+1) return result;
-						result[parser.props[j]] = parsed[j+1];
+						result.values[parser.props[j]] = parsed[j+1];
 					}
 					return result;
 				}
 			}
+		}
+
+		/**
+		 * Used the data returned from parseUrl to get the query object for the api request to
+		 * retrieve the source entity
+		 * @param  {object} parsedObject parsed object from parseUrl
+		 * @return {object}              key/value pairs of IDs needed to retrieve the entity
+		 */
+		function getParsedQobj(parsedObject) {
+			return parsedObject.values;
+		}
+
+		/**
+		 * Because userMentions truncte the message and are largely not very useful, this
+		 * function can retrieve the source object for the full message.  Usually it
+		 * must be run through the extractFullComment function, or the calling component
+		 * will need to extract the data appropriately
+		 * @param  {object} parsedObject parsed object from parseUrl
+		 * @return {promise}             $q promise resolving to the object or the list wihin which the object resides.
+		 */
+		function fetchSourceEntity(parsedObject) {
+			var qObj = getParsedQobj(parsedObject);
+			qObj.parms = parsedObject.parms ? parsedObject.parms : {};
+			//qObj.parms.page = qObj.parms.page || 1;
+			//qObj.parms.perPage = qObj.parms.perPage || 100;
+			var getFunc;
+			if (parsedObject.type === "ticket comment") getFunc = getTicketComment;
+			if (parsedObject.type === "ticket description") getFunc = getTicket;
+			if (parsedObject.type === "merge comment") getFunc = getMergeRequestVersionComments;
+			if (!getFunc) return $q.when();
+			return getFunc(qObj)
+		}
+
+		function fetchSourceCommentText(parsedObject, mention) {
+			return fetchSourceEntity(parsedObject).then(function(results) {
+				let returnObj = {};
+				returnObj.entity = results.data;
+				returnObj.type = parsedObject.type;
+				returnObj.parsedObject = parsedObject
+				if (!results) return null;
+				switch(parsedObject.type) {
+					case "ticket description":
+						returnObj.comment = results.data.description;
+						break;
+					case "ticket comment":
+						returnObj.comment = results.data.comment;
+						break;
+					case "merge comment":
+						let comment;
+						for (let i = 0; i < results.data.length; i++) {
+							if (results.data[i].content.indexOf(mention.message) == -1) continue;
+							if (results.data[i].created_at == mention.created_at) {
+								comment = results.data[i];
+								break;
+							}
+						}
+						returnObj.comment = comment.content;
+						returnObj.comments = results;
+						break;
+					default:
+				}
+				return returnObj;
+			});
 		}
 
   }]);
