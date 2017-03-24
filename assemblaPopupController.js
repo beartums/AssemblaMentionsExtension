@@ -13,7 +13,6 @@ angular.module("app")
 		pu.manifest = chrome.runtime.getManifest();
 		pu.mentionSources = pu.bgPage.sources;
 
-		pu.gotoUrl = gotoUrl;
 		pu.authorInitials = authorInitials;
 		pu.markAsRead = markAsRead;
 		pu.getElapsedTime = getElapsedTime;
@@ -56,19 +55,13 @@ angular.module("app")
 		}
 
 		/**
-		 * Navigate to the supplied userLogin
+		 * Navigate to the supplied Mention Url
 		 * @param  {obj} mention mention containing the link to navigate to
 		 * @return {void}
 		 */
 		function gotoMention(mention) {
 			if (pu.bgPage.options.autoRead) markAsRead(mention);
 			$window.open(mention.link);
-		}
-
-		function gotoUrl(url,$event) {
-			$event.preventDefault();
-			$event.stopPropagation();
-			$window.open(url);
 		}
 
 		/**
@@ -207,35 +200,50 @@ angular.module("app")
 
 		}
 
+		/**
+		 * Retrieve the source of the mention from the API
+		 * @param  {object} mention the mention for which to retrieve the source
+		 * @return {void}
+		 */
 		function getMentionSourceComment(mention) {
-			pu.bgPage.fetchMentionSourceComment(mention)
-				.then(function(source) {
-					if (source.comment !== mention.message) {
-						// $timeout(function() {
-						// 	source.show = true;
-						// })
-					}
-				});
+			pu.bgPage.fetchMentionSourceComment(mention);
 		}
 
+		/**
+		 * Get the appropriate HTML for displaying the mention in a <pre> block
+		 * @param  {object} mention mention to displaying
+		 * @return {string}         trusted html
+		 */
 		function getMentionHtml(mention) {
 			let mentionText = mention.message;
 			let source = pu.bgPage.sources[mention.id];
 			let startSpan = '<span id="mention" class="bg-success">';
 			let endSpan = '</span><!--id="mention"-->';
 
+			// Just use the mention text if there is no source or the full comment
+			// is hidden or the comment and the mention text are exactly the same
 			if (!source || source.hideFullComment || source.comment == mentionText) {
 				return mentionText;
 			}
 
 			let message = source.comment;
+			// place the mention text in a span, so it can be highlighted
 			message = message.replace(mentionText, startSpan + mentionText + endSpan);
+			// replace assembla links with HTML links
 			message = replaceLinks(message,endSpan);
+			// In <pre><code> blocks, the inital linefeed makes everything look wrong
 			message = message.replace(/<code>[\n\r]*/,'<code>');
 
+			// Tell angular not to strip out things it doesn't think are safe.
+			// this is probably not wise
 			return $sce.trustAsHtml(message);
 		}
 
+		/**
+		 * Get the mention type as an abbreviation
+		 * @param  {string} url mintion display url
+		 * @return {string}     type of mention, abbreviated
+		 */
 		function getMentionTypeAbbreviation(url) {
 			let parsed = pu.bgPage.parseUrl(url);
 			let words = parsed.type.split(" ");
@@ -246,23 +254,42 @@ angular.module("app")
 			return abbreviation.toUpperCase();
 		}
 
+		/**
+		 * Get the mention type from the url
+		 * @param  {string} url url for displaying this mention
+		 * @return {string}     type of source
+		 */
 		function getMentionType(url) {
 			let parsed = pu.bgPage.parseUrl(url);
 			return parsed.type;
 		}
 
+		/**
+		 * Replace assembla link shorthand with actual links
+		 * @param  {string} text          text in which links should be replaced
+		 * @param  {string} endMentionTag Tag used to identify the end of a mention, which could be in the middle of a link
+		 * @return {string}               original text with valid links in place of assembla links
+		 */
 		function replaceLinks(text,endMentionTag) {
+			// Text to let people know how to navigate to these links
 			let titleText = 'title="Right-click and select \'Open link in...\' to go to this link; Left-click will take you to the source of this mention in Assembla"';
 			// links come in the form: [[...|xxx]] where .. in the link and xxx is the text
 			let linkRe = /\[\[([^\]]*)(\]\]|$)/g;
+			// Once the link is matched, replace the '[', ']', and 'url:'
 			let replaceRe = /[\[\]]|url:/g
+
 			let matches = text.match(linkRe);
 			matches.forEach(function(match) {
+				// see if there is an embedded endOfMention Tag
 				let embeddedTag = match.indexOf(endMentionTag)>-1
+				// make appropriate replacements in this link
 				let cleanMatch = match.replace(endMentionTag,'').replace(replaceRe,'');
+				// Get the parts for building the link
 				let parts = cleanMatch.split('|');
 				let link = `<a href="${parts[0]}" ${titleText}>${parts[1]}</a>`;
+				// If there was an embedded tag, put it after the link
 				if (embeddedTag) link += endMentionTag;
+				// replace the link in the original text
 				text=text.replace(match,link);
 			})
 
@@ -284,6 +311,13 @@ angular.module("app")
 			return str;
 		}
 
+		/**
+		 * Turn on and off display of the full comment (rather than abbreviated
+		 * mentionText)
+		 * @param  {mention} mention The mention being displayed
+		 * @param  {source} source  source object for the mention
+		 * @return {void}
+		 */
 		function toggleHideFullComment(mention,source) {
 			source = source || pu.bgPage.sources[mention.id];
 			source.hideFullComment = !source.hideFullComment;
