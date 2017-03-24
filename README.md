@@ -10,6 +10,9 @@ Coming Attractions (someday):
 
 Change Log:
 
+1.1.1
+ - Bug when no links are found in text
+
 1.1.0
  - some basic formatting using Assembla's unique formatting rules
  - Retrieve the full text of a comment from the source object when clicking on the source-type label to the right of the date

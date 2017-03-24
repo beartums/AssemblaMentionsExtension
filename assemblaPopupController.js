@@ -279,6 +279,8 @@ angular.module("app")
 			let replaceRe = /[\[\]]|url:/g
 
 			let matches = text.match(linkRe);
+			if (!matches) return text;
+			
 			matches.forEach(function(match) {
 				// see if there is an embedded endOfMention Tag
 				let embeddedTag = match.indexOf(endMentionTag)>-1
