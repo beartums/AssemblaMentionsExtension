@@ -2,7 +2,8 @@
 Chrome extension for managing Assembla Mentions
 
 Coming Attractions (someday):
- - Get full text of source of mentions, when requested
+ - Mention Filtering: User/date Range/text
+ - Get more detail about source (ticket title and description, merge description)
  - Further improvements in user lookup calls
  - get merge description mentions (big)
  - display error messages
@@ -10,6 +11,7 @@ Coming Attractions (someday):
 Change Log:
 
 1.1.0
+ - some basic formatting using Assembla's unique formatting rules
  - Retrieve the full text of a comment from the source object when clicking on the source-type label to the right of the date
  - replace partial text with full text if retrieved, with highlighting of partial text
 
