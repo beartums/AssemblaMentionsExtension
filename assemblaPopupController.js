@@ -236,7 +236,7 @@ angular.module("app")
 
 			// Tell angular not to strip out things it doesn't think are safe.
 			// this is probably not wise
-			return $sce.trustAsHtml(message);
+			return message; //$sce.trustAsHtml(message);
 		}
 
 		/**
@@ -280,7 +280,7 @@ angular.module("app")
 
 			let matches = text.match(linkRe);
 			if (!matches) return text;
-			
+
 			matches.forEach(function(match) {
 				// see if there is an embedded endOfMention Tag
 				let embeddedTag = match.indexOf(endMentionTag)>-1
