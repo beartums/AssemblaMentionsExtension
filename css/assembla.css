@@ -135,3 +135,10 @@ table td {
 table td.type-column {
 	padding-top: 8px;
 }
+
+pre pre {
+	font-family: monospace;
+	background-color: lightGrey;
+	padding: 9.5px;
+	float:none;
+}

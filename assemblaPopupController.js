@@ -2,9 +2,9 @@
  * Controller for the extension popup view, which lists mentions and allows interaction
  */
 angular.module("app")
-	.controller("popupController", ['$window', '$scope', '$timeout', popupControllerFunction]);
+	.controller("popupController", ['$window', '$scope', '$timeout', '$sce', popupControllerFunction]);
 
-	function popupControllerFunction($window,$scope,$timeout) {
+	function popupControllerFunction($window,$scope,$timeout,$sce) {
 
 		// For controler-as syntax
 		var pu = this;
@@ -26,14 +26,17 @@ angular.module("app")
 		pu.getMentionSourceComment = getMentionSourceComment;
 		pu.getMentionHtml = getMentionHtml;
 		pu.toggleHideFullComment = toggleHideFullComment;
+		pu.gotoMention = gotoMention;
 
 		// Watch for changes to the userMentions array so they can be propagated
 		$scope.$watch('pu.bgPage.userMentions', function(newVal,oldVal) {
 			$timeout(function() {
-				pu.userMentions = [];
+				let newMentions = [];
 				newVal.forEach(function(m) {
-					pu.userMentions.push(m);
+					// TODO: retain hide mention state
+					newMentions.push(m);
 				});
+				pu.userMentions = newMentions
 			});
 		});
 
@@ -57,9 +60,15 @@ angular.module("app")
 		 * @param  {obj} mention mention containing the link to navigate to
 		 * @return {void}
 		 */
-		function gotoUrl(mention) {
+		function gotoMention(mention) {
 			if (pu.bgPage.options.autoRead) markAsRead(mention);
 			$window.open(mention.link);
+		}
+
+		function gotoUrl(url,$event) {
+			$event.preventDefault();
+			$event.stopPropagation();
+			$window.open(url);
 		}
 
 		/**
@@ -202,26 +211,29 @@ angular.module("app")
 			pu.bgPage.fetchMentionSourceComment(mention)
 				.then(function(source) {
 					if (source.comment !== mention.message) {
-						$timeout(function() {
-							source.show = true;
-						})
+						// $timeout(function() {
+						// 	source.show = true;
+						// })
 					}
 				});
 		}
 
-		function getMentionHtml(mention,fullComment) {
-			//mention = mention.replace(/\n/g,'<br />')
-			let message = {
-				mention: mention.message
+		function getMentionHtml(mention) {
+			let mentionText = mention.message;
+			let source = pu.bgPage.sources[mention.id];
+			let startSpan = '<span id="mention" class="bg-success">';
+			let endSpan = '</span><!--id="mention"-->';
+
+			if (!source || source.hideFullComment || source.comment == mentionText) {
+				return mentionText;
 			}
-			//fullComment = fullComment.replace(/\n/g,'<br />')
-			if (!fullComment || mention.hideFullComment) return message;
-			let idx = fullComment.indexOf(mention.message);
-			if (idx == -1 || fullComment == mention.message) return message;
-			let clauses = fullComment.replace(mention.message,"~~#~~").split("~~#~~")
-			message.before = idx>-1 ? clauses[0] : "";
-			message.after = clauses.length > 1 || idx==-1 ? clauses[clauses.length-1] : "";
-			return message
+
+			let message = source.comment;
+			message = message.replace(mentionText, startSpan + mentionText + endSpan);
+			message = replaceLinks(message,endSpan);
+			message = message.replace(/<code>[\n\r]*/,'<code>');
+
+			return $sce.trustAsHtml(message);
 		}
 
 		function getMentionTypeAbbreviation(url) {
@@ -239,6 +251,26 @@ angular.module("app")
 			return parsed.type;
 		}
 
+		function replaceLinks(text,endMentionTag) {
+			let titleText = 'title="Right-click and select \'Open link in...\' to go to this link; Left-click will take you to the source of this mention in Assembla"';
+			// links come in the form: [[...|xxx]] where .. in the link and xxx is the text
+			let linkRe = /\[\[([^\]]*)(\]\]|$)/g;
+			let replaceRe = /[\[\]]|url:/g
+			let matches = text.match(linkRe);
+			matches.forEach(function(match) {
+				let embeddedTag = match.indexOf(endMentionTag)>-1
+				let cleanMatch = match.replace(endMentionTag,'').replace(replaceRe,'');
+				let parts = cleanMatch.split('|');
+				let link = `<a href="${parts[0]}" ${titleText}>${parts[1]}</a>`;
+				if (embeddedTag) link += endMentionTag;
+				text=text.replace(match,link);
+			})
+
+			return text;
+
+		}
+
+
 		/**
 		 * simple and stupid singularization.  Just remove trailing 's'
 		 * @param  {string} str   String to singularizeString
@@ -246,14 +278,15 @@ angular.module("app")
 		 * @return {string}       Singlarized viersion of string, if appropriate
 		 */
 		function singularizeString(str, count) {
-			if (count <= 1) {
+			if (count == 1) {
 				return str.replace(/s$/,'');
 			}
 			return str;
 		}
 
-		function toggleHideFullComment(mention) {
-			mention.hideFullComment = !mention.hideFullComment;
+		function toggleHideFullComment(mention,source) {
+			source = source || pu.bgPage.sources[mention.id];
+			source.hideFullComment = !source.hideFullComment;
 		}
 
 		/**

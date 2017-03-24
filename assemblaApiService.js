@@ -335,7 +335,7 @@ angular.module("app")
 			return getFunc(qObj)
 		}
 
-		function fetchSourceCommentText(parsedObject, mentionText) {
+		function fetchSourceCommentText(parsedObject, mention) {
 			return fetchSourceEntity(parsedObject).then(function(results) {
 				let returnObj = {};
 				returnObj.entity = results.data;
@@ -352,9 +352,11 @@ angular.module("app")
 					case "merge comment":
 						let comment;
 						for (let i = 0; i < results.data.length; i++) {
-							if (results.data[i].content.indexOf(mentionText) == -1) continue;
-							comment = results.data[i];
-							break;
+							if (results.data[i].content.indexOf(mention.message) == -1) continue;
+							if (results.data[i].created_at == mention.created_at) {
+								comment = results.data[i];
+								break;
+							}
 						}
 						returnObj.comment = comment.content;
 						returnObj.comments = results;

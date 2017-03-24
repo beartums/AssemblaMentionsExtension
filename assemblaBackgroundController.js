@@ -16,6 +16,7 @@ angular.module("app")
 		bg.aos = aos;
 		bg.userMentions = [];
 		bg.sources = {};
+		//bg.mentionRefs = {};
 		bg.users = {};
 		bg.lastConnect;
 		bg.usersBeingFetched = [];
@@ -103,7 +104,7 @@ angular.module("app")
 
 		function fetchMentionSourceComment(mention) {
 			var parsedUrl = aas.parseUrl(mention.link)
-			return aas.fetchSourceCommentText(parsedUrl,mention.message)
+			return aas.fetchSourceCommentText(parsedUrl,mention)
 				.then(function(source) {
 					$timeout(function() {
 						// Put source in a reference object so that when mentions are updated, the

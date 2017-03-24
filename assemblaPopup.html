@@ -71,7 +71,7 @@
 							<th width="3%"></th>
 						</tr>
 					<!-- Table Data -->
-						<tr ng-repeat="m in pu.userMentions" ng-click="pu.gotoUrl(m)" ng-init="">
+						<tr ng-repeat="m in pu.userMentions" ng-click="pu.gotoMention(m)" ng-init="">
 							<td ng-class="{transparent:m.isBeingDeleted}">
 								<small ng-attr-title="{{m.author_id | authorName: pu.bgPage.users}}" >{{m.author_id | authorInitials: pu.bgPage.users}}
 								</small>
@@ -89,15 +89,13 @@
 								</small></small>
 							</td>
 							<td>
-								<span ng-if="pu.mentionSources[m.id].comment && pu.mentionSources[m.id].comment != m.message" class="fa" ng-class="'fa-' + (m.hideFullComment ? 'toggle-right' : 'toggle-down')" prevent-default ng-click="m.hideFullComment = !m.hideFullComment">
+								<span ng-if="pu.mentionSources[m.id].comment && pu.mentionSources[m.id].comment != m.message" class="fa" ng-class="'fa-' + (pu.mentionSources[m.id].hideFullComment ? 'toggle-right' : 'toggle-down')" prevent-default ng-click="pu.toggleHideFullComment(m)">
 								</span>
 							</td>
 							<td>
 								<small>
-									{{msg=pu.getMentionHtml(m,pu.mentionSources[m.id].comment);""}}
-									<pre ng-if="msg.before || msg.after"><span ng-if="msg.before">{{msg.before}}</span><span class="bg-success">{{msg.mention}}</span><span ng-if="msg.after">{{msg.after}}</span></pre>
-									<pre ng-if="!msg.before && !msg.after"><span>{{msg.mention}}</span></pre>
-								</small>
+									<pre ng-bind-html="pu.getMentionHtml(m)"></pre>
+							</small>
 							</td>
 							<td ng-class="{transparent:m.isBeingDeleted}">
 								<button type="button" class="close blur-hide" prevent-default ng-click="pu.markAsRead(m)"  ng-if="!m.isBeingDeleted && !m.read" title="Mark this mention as read">
