@@ -59,6 +59,7 @@ angular.module("app")
 			elapsedTimeInterval: aos.options.elapsedTimeInterval,
 			hideEmptyBadge: aos.options.hideEmptyBadge,
 			autoRead: aos.options.autoRead,
+			badgeColor: aos.options.badgeColor,
     }, function() {
         // Update status to let user know options were saved.
         aos.status.msg = 'Options saved.';
@@ -83,6 +84,7 @@ angular.module("app")
       statusTimeout: 1500,
 			mentionWatchInterval: '60000',
 			elapsedTimeInterval: '1000',
+			badgeColor: '#A8A8A8',
 			hideEmptyBadge: true,
 			autoRead: true
     }, function(items) {
@@ -91,6 +93,7 @@ angular.module("app")
       aos.options.statusTimeout = items.statusTimeout;
 			aos.options.mentionWatchInterval = items.mentionWatchInterval;
 			aos.options.elapsedTimeInterval = items.elapsedTimeInterval;
+			aos.options.badgeColor = items.badgeColor;
 			aos.options.hideEmptyBadge = items.hideEmptyBadge;
 			aos.options.autoRead = items.autoRead;
       $rootScope.$apply();

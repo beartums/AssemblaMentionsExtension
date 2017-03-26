@@ -82,11 +82,17 @@
 								</small>
 							</td>
 							<td class="type-column" ng-class="{transparent:m.isBeingDeleted}">
-								<small><small>
-									<span class='label' prevent-default ng-class="'label-' + (pu.getMentionTypeAbbreviation(m.link)=='MC' ? 'danger' : 'success')" ng-attr-title="{{pu.getMentionType(m.link)}}" ng-click="pu.getMentionSourceComment(m)">
-										{{pu.getMentionTypeAbbreviation(m.link)}}
-									</span>
-								</small></small>
+									<small><small>
+										<span class='label' prevent-default  ng-if="!m.fetchingSource"
+										ng-class="pu.getMentionTypeLabelClasses(m)"
+										ng-attr-title="{{pu.getMentionType(m.link) + '; ' + (!pu.mentionSources[m.id] ? 'click to fetch full text' : 'Full text fetched')}}" 
+										ng-click="pu.getMentionSourceComment(m)">
+											{{pu.getMentionTypeAbbreviation(m.link)}}
+										</span>
+										<span ng-if="m.fetchingSource">
+												<span class="fa fa-spinner fa-spin"></span>
+										</span>
+									</small></small>
 							</td>
 							<td>
 								<span ng-if="pu.mentionSources[m.id].comment && pu.mentionSources[m.id].comment != m.message" class="fa" ng-class="'fa-' + (pu.mentionSources[m.id].hideFullComment ? 'toggle-right' : 'toggle-down')" prevent-default ng-click="pu.toggleHideFullComment(m)">

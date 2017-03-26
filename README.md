@@ -10,6 +10,11 @@ Coming Attractions (someday):
 
 Change Log:
 
+1.1.2
+ - Sanitize input from mentions so malicious code isn't included
+ - Better indication that the mention type is clickable
+ - Configurable Badge Color, in options
+ 
 1.1.1
  - Bug when no links are found in text
 
