@@ -211,7 +211,8 @@ angular.module("app")
 					}
 					// Set the badge
 					chrome.browserAction.setBadgeText({text: badgeText});
-					var color = bg.userMentions.length==0 ? '#A8A8A8' : '#00cc00'
+					let color = bg.options.badgeColor || '#00cc00';
+					color = bg.userMentions.length!=0 ? color : '#A8A8A8'
 					chrome.browserAction.setBadgeBackgroundColor({'color':color});
 					return data;
 				}).catch(function (err) {

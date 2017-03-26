@@ -1,21 +1,18 @@
-.hover-btn {
+.hover-label {
   cursor: pointer;
-  -webkit-border-radius: 5;
-  border-radius: 5px;
+  /*border-radius: 3px;*/
   font-family: Arial;
-  padding: 5px 5px 5px 5px;
+  /*padding: 2px 3px 2px 3px;*/
 }
-.hover-btn:hover {
+.hover-label:hover {
   cursor: pointer;
-	background: #c7d0d6;
-  background-image: -webkit-linear-gradient(top, #c7d0d6, #979fa3);
-  -webkit-border-radius: 5;
-  border-radius: 5px;
-  font-family: Arial;
+	/*background: #c7d0d6;
+  background-image: -webkit-linear-gradient(top, #c7d0d6, #979fa3);*/
   color: #ffffff;
-  padding: 5px 5px 5px 5px;
   text-decoration: none;
+	filter: brightness(85%);
  }
+ 
 .hover-btn span {
 	visibility: hidden;
 }
@@ -127,7 +124,7 @@ table {
 	padding: 5px;
 	border-top: 1px solid black;
 	border-bottom: 1px solid black;
-	background-color: lightGrey
+	background-color: lightGrey;
 }
 table td {
 	padding: 5px;
@@ -142,3 +139,7 @@ pre pre {
 	padding: 9.5px;
 	float:none;
 }
+
+.label {
+	position: relative;
+	top: -1px;

@@ -26,6 +26,7 @@ angular.module("app")
 		pu.getMentionHtml = getMentionHtml;
 		pu.toggleHideFullComment = toggleHideFullComment;
 		pu.gotoMention = gotoMention;
+		pu.getMentionTypeLabelClasses = getMentionTypeLabelClasses;
 
 		// Watch for changes to the userMentions array so they can be propagated
 		$scope.$watch('pu.bgPage.userMentions', function(newVal,oldVal) {
@@ -206,7 +207,13 @@ angular.module("app")
 		 * @return {void}
 		 */
 		function getMentionSourceComment(mention) {
-			pu.bgPage.fetchMentionSourceComment(mention);
+			mention.fetchingSource = true;
+			pu.bgPage.fetchMentionSourceComment(mention)
+				.finally(function(source) {
+					$timeout(function() {
+						mention.fetchingSource = false;
+					});
+				});
 		}
 
 		/**
@@ -262,6 +269,15 @@ angular.module("app")
 		function getMentionType(url) {
 			let parsed = pu.bgPage.parseUrl(url);
 			return parsed.type;
+		}
+		
+		function getMentionTypeLabelClasses(mention) {
+			let classes = [];
+			classes.push('label-' + (pu.getMentionTypeAbbreviation(mention.link)=='MC' ? 'danger' : 'success'));
+			if (!pu.mentionSources[mention.id]) {
+				classes.push('hover-label');
+			}
+			return classes;
 		}
 
 		/**
