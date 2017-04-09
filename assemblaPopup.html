@@ -1,10 +1,10 @@
-<html style="min-width:720px; padding-left:0px;">
+<html class="popup-page">
 <head>
 	<link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
 	<link href="css/font-awesome.min.css" rel="stylesheet" media="screen">
 	<link href="css/assembla.css" rel="stylesheet" media="screen">
 </head>
-<body ng-app="app" style="padding-left:25px; overflow-x:hidden;">
+<body ng-app="app">
 	<div ng-controller="popupController as pu">
 		<div class="container-fluid">
 			<!-- Title-->
@@ -56,6 +56,12 @@
 					</span>
 				</div>
 			</div>
+			<!--POPOVER TEMPLATE -->
+			<script type="text/ng-template" id="userListPopover.html">
+				<div class="row" width="400px">
+					<select-by-label options="pu.bgPage.users" config="pu.userSelectionConfig"></select-by-label>
+				</div>
+			</script>
 				<!-- Table -->
 			<div class="row table">
 				<div class="col-xs-12">
@@ -63,17 +69,26 @@
 					<small>
 					<table class="mentions-table">
 						<tr>
-							<th width="5%">By</th>
+							<th width="7%" uib-popover-template="'userListPopover.html'" popover-class="popover" popover-append-to-body="true" popover-placement="bottom-left" popover-trigger="'outsideClick'">
+								By<span ng-if="pu.isFilteredByMentioner()" class="fa fa-filter superscript"></span>
+							</th>
 							<th width="13%">Date</th>
 							<th width="5%">Type</th>
 							<th width="4%"></th>
-							<th>Message</th>
+							<th style>
+								Message
+								<span style="font-weight: normal!important;font-size:x-small!important;position:relative;top:-1px"
+									ng-if="visibleMentions.length != pu.userMentions.length">
+									{{visibleMentions.length}} displayed of {{pu.userMentions.length}}
+								</span>
+							</th>
 							<th width="3%"></th>
 						</tr>
 					<!-- Table Data -->
-						<tr ng-repeat="m in pu.userMentions" ng-click="pu.gotoMention(m)" ng-init="">
+						<tr ng-repeat="m in visibleMentions = (pu.userMentions | filter:pu.filterMentions)" ng-click="pu.gotoMention(m)">
 							<td ng-class="{transparent:m.isBeingDeleted}">
-								<small ng-attr-title="{{m.author_id | authorName: pu.bgPage.users}}" >{{m.author_id | authorInitials: pu.bgPage.users}}
+								<small ng-attr-title="{{pu.bgPage.users[m.author_id].displayName}}" >
+									{{pu.bgPage.users[m.author_id].initials}}
 								</small>
 							</td>
 							<td ng-class="{transparent:m.isBeingDeleted}">
@@ -85,7 +100,7 @@
 									<small><small>
 										<span class='label' prevent-default  ng-if="!m.fetchingSource"
 										ng-class="pu.getMentionTypeLabelClasses(m)"
-										ng-attr-title="{{pu.getMentionType(m.link) + '; ' + (!pu.mentionSources[m.id] ? 'click to fetch full text' : 'Full text fetched')}}" 
+										ng-attr-title="{{pu.getMentionType(m.link) + '; ' + (!pu.mentionSources[m.id] ? 'click to fetch full text' : 'Full text fetched')}}"
 										ng-click="pu.getMentionSourceComment(m)">
 											{{pu.getMentionTypeAbbreviation(m.link)}}
 										</span>
@@ -101,7 +116,7 @@
 							<td>
 								<small>
 									<pre ng-bind-html="pu.getMentionHtml(m)"></pre>
-							</small>
+								</small>
 							</td>
 							<td ng-class="{transparent:m.isBeingDeleted}">
 								<button type="button" class="close blur-hide" prevent-default ng-click="pu.markAsRead(m)"  ng-if="!m.isBeingDeleted && !m.read" title="Mark this mention as read">
@@ -119,7 +134,10 @@
 	</div> <!-- unnecessary Div ?? -->
 	<script src="js/angular.min.js" charset="utf-8"></script>
 	<script src="js/angular-sanitize-1.4.0.js" charset="utf-8"></script>
+	<script src="js/ui-bootstrap-tpls-2.5.0.min.js"></script>
+	<script src="selectByLabelModule.js" charset="utf-8"></script>
 	<script src="assemblaPopupMain.js" charset="utf-8"></script>
 	<script src="assemblaPopupController.js"></script>
+
 </body>
 </html>

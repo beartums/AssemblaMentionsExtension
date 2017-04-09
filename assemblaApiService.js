@@ -73,6 +73,7 @@ angular.module("app")
     var self = this;
 
     function init(authObj) {
+			console.log('aas',authObj,authObj.key,authObj.secret);
       reqObj.headers["X-Api-Key"] = authObj.key;
       reqObj.headers["X-Api-Secret"] = authObj.secret;
     }

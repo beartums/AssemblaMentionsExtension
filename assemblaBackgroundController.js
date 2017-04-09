@@ -1,9 +1,7 @@
-angular.module("app", []);
-
 angular.module("app")
-	.controller("assemblaBackgroundController", ['$window', '$scope', '$timeout', '$q', 'assemblaApiService', 'assemblaOptionsService',  assemblaBackgroundControllerFunction]);
+	.controller("assemblaBackgroundController", ['$window', '$scope', '$timeout', '$q', '$filter', 'assemblaApiService', 'assemblaOptionsService',  assemblaBackgroundControllerFunction]);
 
-	function assemblaBackgroundControllerFunction($window, $scope, $timeout, $q, aas, aos) {
+	function assemblaBackgroundControllerFunction($window, $scope, $timeout, $q, $filter, aas, aos) {
 
 		// For controler-as syntax
 		// NOTE: not using 'var' because I WANT this to be a global object attached to
@@ -72,6 +70,7 @@ angular.module("app")
 		 * @return {[type]} [description]
 		 */
 		function init() {
+			//console.log(JSON.stringify(bg.options),JSON.stringify(bg.aos));
 			aas.init({key: bg.options.key, secret: bg.options.secret});
 			startMentionWatch();
 		}
@@ -237,7 +236,11 @@ angular.module("app")
 
 			// ping assembla for the user
 			return aas.getUser({userId: id}).then(function(results) {
-				bg.users[id] = results && results.data ? results.data : {};
+				let user = results && results.data ? results.data : {}
+				user.isSelected = true;
+				user.initials = $filter('authorInitials')(user);
+				user.displayName = $filter('authorName')(user);
+				bg.users[id] = user;
 			}).catch(function(err) {
 				console.dir(err);
 				bg.users[id]={name:'not found'}
