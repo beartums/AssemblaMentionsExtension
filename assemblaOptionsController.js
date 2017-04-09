@@ -21,7 +21,7 @@ angular.module("app")
 			aos.setOnReadyHandler(init);
 
 			$scope.$watch('vm.options.badgeColor',function(newVal,oldVal) {
-				console.log(newVal,oldVal);
+				//console.log(newVal,oldVal);
 				if (typeof oldVal == 'undefined') return;
 				if (newVal!=oldVal) vm.change();
 			});
@@ -108,7 +108,7 @@ angular.module("app")
 				let i = users.indexOf(user);
 				let j = i + skip
 				if (j<0) {
-					j = users.length - j + 1;
+					j = users.length + j ;
 				} else if (j>users.length-1) {
 					j = j - users.length
 				}
