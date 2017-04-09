@@ -2,18 +2,28 @@
  * Controller for the extension popup view, which lists mentions and allows interaction
  */
 angular.module("app")
-	.controller("popupController", ['$window', '$scope', '$timeout', '$sce', popupControllerFunction]);
+	.controller("popupController", ['$window', '$scope', '$timeout', '$sce', '$filter', popupControllerFunction]);
 
-	function popupControllerFunction($window,$scope,$timeout,$sce) {
-
+	function popupControllerFunction($window,$scope,$timeout,$sce,$filter) {
+// TODO: Save user-display choice globally
+// TODO: ability to specify user inits
+// TODO: manage user stuff on options page
+//
 		// For controler-as syntax
 		var pu = this;
 
 		pu.bgPage = chrome.extension.getBackgroundPage().bg;
 		pu.manifest = chrome.runtime.getManifest();
 		pu.mentionSources = pu.bgPage.sources;
+		pu.selectedUsers;
+		pu.users = [];
+		pu.userSelectionConfig = {
+			display: 'initials',
+			title: 'displayName',
+			selected: 'isSelected'
+		}
 
-		pu.authorInitials = authorInitials;
+		//pu.authorInitials = authorInitials;
 		pu.markAsRead = markAsRead;
 		pu.getElapsedTime = getElapsedTime;
 		pu.refresh = refresh;
@@ -27,6 +37,10 @@ angular.module("app")
 		pu.toggleHideFullComment = toggleHideFullComment;
 		pu.gotoMention = gotoMention;
 		pu.getMentionTypeLabelClasses = getMentionTypeLabelClasses;
+		pu.getObjectByProp = getObjectByProp;
+		pu.filterMentions = filterMentions;
+//		pu.isFilteredByMentioner = isFilteredByMentioner;
+		//pu.getUsers = getUsers;
 
 		// Watch for changes to the userMentions array so they can be propagated
 		$scope.$watch('pu.bgPage.userMentions', function(newVal,oldVal) {
@@ -39,6 +53,7 @@ angular.module("app")
 				pu.userMentions = newMentions
 			});
 		});
+
 
 		// page shows a counter indicating time since updated.  This starts the clock
 		startElapsedTimeInterval();
@@ -53,6 +68,10 @@ angular.module("app")
 			interval = interval || pu.bgPage.options.elapsedTimeInterval || 1000;
 			getElapsedTime();
 			$timeout(startElapsedTimeInterval,interval);
+		}
+
+		function filterMentions(mention) {
+			return pu.bgPage.users[mention.author_id].isSelected;
 		}
 
 		/**
@@ -86,6 +105,10 @@ angular.module("app")
 			});
 		}
 
+		/**
+		 * Toggle api update activity on or off
+		 * @return {void}
+		 */
 		function toggleApiUpdates() {
 			if (pu.bgPage.isPaused()) {
 				pu.bgPage.startUpdates();
@@ -95,7 +118,7 @@ angular.module("app")
 		}
 
 		/**
-		 * Open the optiong page
+		 * Open the  page
 		 * @return {void}
 		 */
 		function openOptions() {
@@ -134,29 +157,6 @@ angular.module("app")
 						mention.isBeingDeleted = false;
 					});
 				});
-		}
-
-		/**
-		 * Get the initials of the author for displayVal
-		 * @param  {string} id Assembla-assigned author_id
-		 * @return {string}    author initials, derived from the id as best as possible
-		 */
-		function authorInitials(id) {
-			var author = pu.bgPage.users(id);
-			var init = '', inits = []
-			if (!author) return '--';
-
-			// use name, with fallback to first part of email or login id
-			var name = (author.name ? author.name
-									: (author.email ? author.email.substring(0,author.email.indexOf('@')-1)
-										: author.login));
-			// split by word and take the first letter of each
-			inits = name.replace("."," ").split(" ");
-			if (inits.length==1) return inits[0].substring(0,3);
-			return inits.reduce(function(init,name) {
-				init += name[0];
-				return init;
-			},"");
 		}
 
 		/**
@@ -270,7 +270,12 @@ angular.module("app")
 			let parsed = pu.bgPage.parseUrl(url);
 			return parsed.type;
 		}
-		
+
+		/**
+		 * Get the class names for the mention-type label-success
+		 * @param  {mention} mention a mention object
+		 * @return {array<string>}         array of classes to apply
+		 */
 		function getMentionTypeLabelClasses(mention) {
 			let classes = [];
 			classes.push('label-' + (pu.getMentionTypeAbbreviation(mention.link)=='MC' ? 'danger' : 'success'));
@@ -279,6 +284,27 @@ angular.module("app")
 			}
 			return classes;
 		}
+
+		/**
+		 * Get an object form an array of objects by property value
+		 * @param  {aray<object>} objArray  Array of objects to search
+		 * @param  {string} property  name of property to compare
+		 * @param  {string} propValue value of property to find
+		 * @return {object}           object with the specified value in specified property
+		 */
+		function getObjectByProp(objArray, property, propValue) {
+			if (!objArray || !objArray.length) return null;
+			for (let i = 0; i < objArray.length; i++) {
+				if (objArray[i][property] == propValue) return objArray[i];
+			}
+			return null;
+		}
+
+		// function isFilteredByMentioner() {
+		// 	return false;
+		// 	if (!pu.selectedUsers || !pu.users) return false;
+		// 	return pu.selectedUsers.length !== pu.users.length;
+		// }
 
 		/**
 		 * Replace assembla link shorthand with actual links
